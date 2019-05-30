@@ -1,4 +1,10 @@
-#import pyaudio
+""" SYNTH-CORONA: MUSICAL TYPEWRITER
+
+    This is a little code language for creating chiptunes. It features a highly
+    modular design which can be applied to instruments, pitches, sequences,
+    and patterns.
+
+"""
 import wave
 import sys, random, time
 
@@ -39,19 +45,35 @@ STOP = -2
 # exactly, without applying rate or frequency adjustments.
 ADJUST = -3
 
-# Exception for syntax errors while parsing a SynthCorona file.
 class SCParseError(Exception):
+    """ Exception for syntax errors discovered while parsing a SC file. """
+
     def __init__(self, msg="", line=0):
+        """ Initializer
+
+            Keyword Arguments:
+            msg -- Message describing the error.
+            line -- The line number of where the error was tripped.
+        """
         self.message = msg + " Line: " + str(line)
 
     def __str__(self):
+        """ Returns the error message (with line number). """
         return self.message
 
-# Main SynthCorona class -- parses an .sc file into song/instruments &
-# renders them into a .wav file!
 class SynthCorona:
-    # Basic, empty initializer
+    """ Core SynthCorona class.
+
+        Handles parsing an SC file into a modules and song data, as well as
+        rendering that data into a Wave audio file.
+    """
+
     def __init__(self):
+        """ Empty initializer.
+
+            Once initialized, call parse() to load song data and populate.
+        """
+
         self.path = ""
         self.cfg = dict()
         self.insts = dict()
@@ -74,10 +96,14 @@ class SynthCorona:
 
         self.curParseModule = "None"
 
-    # Builds the tones dictionary, which maps note/oct codes to their
-    # value in cents. This corresponds directly to how notes are depicted
-    # in SC -- i.e. "C4", "a2", "D#6", "F 3", etc. Generates 10 octaves (0-9).
     def buildTones(self):
+        """ Builds the tones dictionary, which maps note/oct codes to their
+            value in cents. This corresponds directly to how notes are
+            depicted in SC -- i.e. "C4", "a2", "D#6", "F 3", etc.
+
+            Generates 10 octaves (0-9).
+        """
+
         slts = ["C", "d", "D", "e", "E", "F", "g", "G", "a", "A", "b", "B"]
         dlts = ["C ", "C#", "Db", "D ", "D#", "Eb", "E ", "F ", "F#", "Gb",
                 "G ", "G#", "Ab", "A ", "A#", "Bb", "B ", ]
@@ -93,19 +119,27 @@ class SynthCorona:
                 ky[nm] = (12*oct+dvals[inx])*100
         return ky
 
-    # Builds a list of pre-baked frequencies for each cent in the 10 octaves
-    # of the tones array. When pitches are read in SC, we will access the
-    # corresponding index of this array, rather than calculating on the fly.
     def buildFreqs(self):
+        """ Builds a list of pre-baked frequencies for each cent in the 10 octaves
+            of the tones array. When pitches are read in SC, we will access the
+            corresponding index of this array, rather than calculating on the fly.
+        """
+
         freqs = []
         for i in range(12000):
             freqs.append(calc_freq(i-self.tones["A4"]))
         return freqs
 
-    # Parses the SC file at filename and loads its information into this
-    # instance of SynthCorona. Throws SCParseError on finding an error in the
-    # SC file.
     def parse(self, filename):
+        """ Parses the SC file at filename and loads its information into this
+            instance of SynthCorona.
+
+            Arguments:
+            filename -- The path of the file to parse.
+
+            Throws SCParseError if any SC syntax errors are found while parsing.
+        """
+
         # We pull the directory from the SC path, to use for importing files
         # from the same folder, without needing an absolute path.
         fldr = filename.rfind("\\")
@@ -133,16 +167,6 @@ class SynthCorona:
         # These variables affect Sequences. We'll reuse them for each Seq we
         # parse, but they need to be preserved across multiple lines while each
         # Sequence is being parsed.
-
-        # Indicates the start of a sequence pattern in a SeqLine.
-        # I don't think this is necessary now that SeqLines have independent
-        # sizes -- commenting out to test this theory.
-        #startInx = -1
-
-        # I think this described the fixed with of a Sequence -- but it is never
-        # even initialized & only read in one place. I'm commenting both out
-        # to test.
-        #seqWidth = -1
 
         # The name that identifies a Sequence in SC code & in seqs Dict
         seqName = ""
@@ -312,13 +336,11 @@ class SynthCorona:
                                 # Parse looping property (T/F)
                                 elif(mt.startswith(("loop", "LOOP", "l", "L"))):
                                     mt = mt.split("=")[1].lstrip()
-                                    #loop = mt.startswith("t") or mt.startswith("T") or mt.startswith("1")
                                     loop = mt.startswith(("T","t","1"))
                                 # Parse sustain property (T/F)
                                 elif(mt.startswith(("sus", "SUS", "SUSTAIN", "sustain", "s", "S"))):
                                     mt = mt.split("=")[1].lstrip()
                                     sus = mt.startswith(("T","t","1"))
-                                    #sus = mt.startswith("t") or mt.startswith("T") or mt.startswith("1")
                                 # Parse the pan value / load a pan module
                                 elif(mt.startswith(("pan", "PAN"))):
                                     mt = mt.split("=")[1].lstrip()
@@ -456,26 +478,26 @@ class SynthCorona:
                                 else:
                                     raise SCParseError("Unrecognized Instrument in sequence line: " + line[ct],i)
                                 ct += 1
-                            # Probably unnecessary -- delete if SC still works.
-                            #while(len(pat)<seqWidth):
-                            #    pat.append(None)
                             seqLines.append(SeqLine(self, pitch, pat, pan))
                         # Check if this is the end of Sequence chunk --
                         # If so, pack up this Sequence & add it to seqs.
                         if(i+1>=len(text) or text[i+1][0:3] in HEADERS):
                             self.seqs[seqName] = Sequence(seqLines, self, seqPan)
             elif(state == SEQ):
-                # This line is blank, so we are skipping it. However, we still
+                # Current line is blank, so we are skipping it. However, we still
                 # need to check if it is the end of a Sequence chunk & if so
                 # add the current Sequence to self.seqs
                 if(i+1>=len(text) or text[i+1][0:3] in HEADERS):
                     self.seqs[seqName] = Sequence(seqLines, self, seqPan)
-        # Once we're done parsing the file, bundle up the Song data & add it
-        # to self.song.
         self.song = Song(songSteps,self)
 
-    # Renders the song data into a WAV file.
     def render(self, filename):
+        """ Renders the Song into a Wave file.
+
+            Arguments:
+            filename -- The path of the output file.
+        """
+
         # Take note of the time before we begin.
         startTime = time.clock()
         # Create our output file.
@@ -560,7 +582,7 @@ class SynthCorona:
             count += 1
             samps += 1
 
-            # Every 512 frames, we update progress counter.
+            # Every 512 frames, update progress counter.
             if(count > 512):
                 elp = time.clock()-startTime
                 sys.stdout.write("\r")
@@ -653,25 +675,28 @@ class SynthCorona:
         renderTime = time.clock()-startTime
         print("\nRENDER TIME: " + str(int(renderTime*100)/100) + "                        ")
 
-    # Central function for parsing a SynthCorona module from a string.
-    # This method handles parsing binary operation modules,
-    # and uses popModule to parse individual modules & unary operators.
-    # Patterns, Sets, and Series' are separated with an "extract" method,
-    # then parsed via a "parse" method (which will also call parseModule for
-    # each of its elements.)
-    #
-    # In this method, binary operators are parsed left-to-right, which is in
-    # turn the only order of operations in Synth-Corona
-    # So A+B*C = (A+B)*C != A+(B*C)
-    #
-    # Use any grouping module (Pattern, Set, Series) to change the order of
-    # operations if necessary.
-    #
-    # Arguments:
-    # stng is the string from which to parse.
-    # type tells us what the module is for. Options: INST, TONE, SEQN, MDLE
-    # line is the current parser line; for error reporting.
     def parseModule(self, stng, type, line=0):
+        """ Central function for parsing a SynthCorona module from a string.
+
+            This method handles parsing binary operation modules,
+            and uses popModule to parse individual modules & unary operators.
+            Patterns, Sets, and Series' are separated with an "extract" method,
+            then parsed via a "parse" method (which will also call parseModule for
+            each of its elements.)
+
+            In this method, binary operators are parsed left-to-right, which is in
+            turn the only order of operations in Synth-Corona.
+            So A+B*C = (A+B)*C != A+(B*C)
+
+            Use any grouping module (Pattern, Set, Series) to change the order of
+            operations if necessary.
+
+            Arguments:
+            stng -- String containing the module description.
+            type -- Tells us what the module is for. Options: INST, TONE, SEQN, MDLE
+            line -- Current parser line; for error reporting.
+        """
+
         # Parses the first standalone module & sends us [mdl, remaining string]
         modA = self.popModule(stng, type,line)
         modA, stng = modA[0], modA[1]
