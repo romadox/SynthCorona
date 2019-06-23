@@ -39,7 +39,7 @@ Headers indicate which chunk is to follow. They are as follows:
 <li>INS : Instrument Chunk</li>
 <li>MDL : Module Chunk</li>
 <li>SEQ : Sequence Chunk (each header describes one Sequence)</li>
-<li>BLK/PAT: Sequence Block Chun (for creating song patterns out of Sequences)</li>
+<li>BLK/PAT: Sequence Block Chunk (for creating song patterns out of Sequences)</li>
 <li>SNG : Song Block</li>
 <li>IMP : Import Block (all on one line).</li>
 </ul>
