@@ -16,9 +16,9 @@ INS  // The Instrument Block
 // We didn't set a period, so the parser will use the length of our pattern.
 A: [4,-4]
 
-// This is a simple, blocky wave.
+// This is a triangle wave.
 // This time we did set the period ("<prd=8>").
-B <prd=8>: [0,2,4,2,0,-2,-4,-2]
+B <prd=4>: [0i9,9i0,0i-9,-9i0]
 
 SEQ A // The Sequence Block
    // Our Melody, with Instrument A
@@ -33,4 +33,4 @@ G3:   |    B B     B B |        B B     |
 D3:   |        B B     |    B B         |
 C3:   |B B             |B B         B-  |
 
-SNG A,A,A,A    // For the song, we'll just play A four times.
+SNG A,A,A,A    // For the song, we just play A four times.
