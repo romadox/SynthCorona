@@ -75,7 +75,7 @@ class SCModule:
         be combined and nested to create complex patterns and operations.
     """
 
-    def step(self, delta, const-=1):
+    def step(self, delta, const=-1):
         """ Steps the module forward in time.
 
             Delta is the local time amount by which to step, which is used
@@ -1403,7 +1403,7 @@ class SynthCorona:
             ary.append(self.parseModule(ln.strip(), type, line))
         return Series(ary)
 
-class SeqLine(Module):
+class SeqLine(SCModule):
     """ Represents a single line of a Sequence module.
 
         This corresponds to a single line of the SEQ chunk of a SC file.
@@ -1550,7 +1550,7 @@ class SeqLine(Module):
         """
         return ("LINE: " + self.pitch.to_string() + ": " + self.pat.to_string())
 
-class Sequence(Module):
+class Sequence(SCModule):
     """ Contains sequence data (in the form of SeqLines) for a section/pattern
         within a song.
 
@@ -1682,7 +1682,7 @@ class Sequence(Module):
             tlines.append(l.clone())
         return Sequence(tlines, self.parent, self.pan.clone())
 
-class SeqBlock(Module):
+class SeqBlock(SCModule):
     """ Sequence wrapper for modules. When Sequence modules are parsed by the
         BLK/PAT chunk, they will be packaged in this.
 
@@ -1740,7 +1740,7 @@ class SeqBlock(Module):
     def clone(self):
         return SeqBlock(self.module.clone(),self.pan.clone())
 
-class Song(Module):
+class Song(SCModule):
     """ Module class representing a song.
 
         This is primarily composed of a list of Sequences (or SeqBlock), which
@@ -1822,7 +1822,7 @@ class Song(Module):
             sum += mdl.length()
         return sum
 
-class Inst(Module):
+class Inst(SCModule):
     """ Module representing an instrument/synth.
 
         Along with core module functions, Insts also have set_freq(), which
@@ -1990,7 +1990,7 @@ class Inst(Module):
     def stop(self):
         self.step(0,STOP)
 
-class Val(Module):
+class Val(SCModule):
     """ Module representing a single fixed value.
 
         This module has length 1 and always returns its value on read().
@@ -2040,7 +2040,7 @@ class Val(Module):
     def set_freq(self, freq):
         pass
 
-class StereoVal(Module):
+class StereoVal(SCModule):
     """ Module representing a single value, in stereo.
 
         Right now, the only we place we use this is when creating tails to fade
@@ -2100,7 +2100,7 @@ class StereoVal(Module):
     def set_freq(self, freq):
         pass
 
-class Pattern(Module):
+class Pattern(SCModule):
     """ Represents a sequence of modules, to be played one after the other.
 
         This differs from Series in that Pattern plays through each of its
@@ -2211,7 +2211,7 @@ class Pattern(Module):
         for p in self.pat:
             p.set_freq(freq)
 
-class Set(Module):
+class Set(SCModule):
     """ Module for selecting random modules from a set.
 
         Each time Set is reset (or initialized), a random module is selected,
@@ -2289,7 +2289,7 @@ class Set(Module):
         for m in self.set:
             m.set_freq(freq)
 
-class Series(Module):
+class Series(SCModule):
     """ Module for playing a series of modules as part of a longer pattern.
 
         Series differs from Pattern in that Series plays modules one at a time--
@@ -2378,7 +2378,7 @@ class Series(Module):
         for s in self.srs:
             s.set_freq(freq)
 
-class Invert(Module):
+class Invert(SCModule):
     """ Module for negation.
 
         Multiplies all output by -1.
@@ -2427,7 +2427,7 @@ class Invert(Module):
     def set_freq(self, freq):
         self.mdl.set_freq(freq)
 
-class Level(Module):
+class Level(SCModule):
     """ Module for setting the volume of a module.
 
         This uses signal values, so 9 is max volume; 0 is silence. Negative
@@ -2506,7 +2506,7 @@ class Level(Module):
         self.a.set_freq(freq)
         self.b.set_freq(freq)
 
-class Envelope(Module):
+class Envelope(SCModule):
     """ Volume envelope module.
 
         This is similar to Level, except the volume module runs in constant
@@ -2596,7 +2596,7 @@ class Envelope(Module):
         self.a.set_freq(freq)
         self.b.set_freq(freq)
 
-class Const(Module):
+class Const(SCModule):
     """ Plays a module in constant time, based on song steps.
 
     """
@@ -2660,7 +2660,7 @@ class Const(Module):
     def set_freq(self, freq):
         self.mdl.set_freq(freq)
 
-class Speed(Module):
+class Speed(SCModule):
     """ Module for changing playback rate.
 
         This module modifies both delta and const in step(), so it DOES affect
@@ -2744,7 +2744,7 @@ class Speed(Module):
         self.mdl.set_freq(freq)
         self.rate.set_freq(freq)
 
-class LinInterp(Module):
+class LinInterp(SCModule):
     """ Module for linear interpolation between two modules.
 
         Both modules are updated for the duration. Their outputs are blended
@@ -2823,7 +2823,7 @@ class LinInterp(Module):
         self.a.set_freq(freq)
         self.b.set_freq(freq)
 
-class Multiply(Module):
+class Multiply(SCModule):
     """ Module that multiplies two inputs together.
     """
 
@@ -2899,7 +2899,7 @@ class Multiply(Module):
         self.a.set_freq(freq)
         self.b.set_freq(freq)
 
-class Divide(Module):
+class Divide(SCModule):
     """ Module that divides two inputs.
     """
 
@@ -2971,7 +2971,7 @@ class Divide(Module):
         self.a.set_freq(freq)
         self.b.set_freq(freq)
 
-class Add(Module):
+class Add(SCModule):
     """ Module that adds two inputs.
     """
 
@@ -3047,7 +3047,7 @@ class Add(Module):
         self.a.set_freq(freq)
         self.b.set_freq(freq)
 
-class Subtract(Module):
+class Subtract(SCModule):
     """ Module that subtracts two inputs.
     """
 
@@ -3123,7 +3123,7 @@ class Subtract(Module):
         self.a.set_freq(freq)
         self.b.set_freq(freq)
 
-class Repeat(Module):
+class Repeat(SCModule):
     """ Module that loops an input a given number of times.
     """
 
@@ -3183,7 +3183,7 @@ class Repeat(Module):
         self.a.set_freq(freq)
         self.b.set_freq(freq)
 
-class Cross(Module):
+class Cross(SCModule):
     """ Module for "crossing" a binary operation.
 
         Normal binary operators run both operand modules (A and B)
