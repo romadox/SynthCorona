@@ -81,7 +81,8 @@ creating your song.
         s    |   Speed       | Run A at Bx speed (as a ratio)   |     AsB
 
 <h3>Notes:</h3>
-<ul><li>Add, Subtract, Multiply, Divide, and Level all perform operations
+
+- Add, Subtract, Multiply, Divide, and Level all perform operations
 on two different Modules, "A" and "B". Since these can have different
 lengths, one Module is assigned the "lead", meaning we will stop
 once it is finished, and we will reset the other module if we have
@@ -90,19 +91,19 @@ However, there are times when you might need to use the length from
 "B", so this is an option via a meta-tag:
 <code>A/\<lead=B>B</code>
 This creates a Division operation that will use the length of "B" as
-its lead.</li>
+its lead.
 
-<li>Typically Interpolate has a width of 1, meaning it does its full
+- Typically Interpolate has a width of 1, meaning it does its full
 gradient in one step. You can change this width using a
 meta-tag: <code>Ai\<w=4>B</code>
 In this instance, we are saying that we want to interpolate A to B
-but we want to do it over 4 steps ("\<w=4>").</li>
+but we want to do it over 4 steps ("\<w=4>").
 
-<li>The level operation is like volume--each item in B is converted
+- The level operation is like volume--each item in B is converted
 into a percentage (-1 to 1), which is this multiplied by the value
-in A. This is equivalent to <code>A*(B/9)</code>, since we use 9 as a maximum value.</li>
+in A. This is equivalent to <code>A*(B/9)</code>, since we use 9 as a maximum value.
 
-<li>Envelope is similar to a combination of Level and Constant--time
+- Envelope is similar to a combination of Level and Constant. Time
 is processed based on song steps for module B, so the envelope
 will be the same length regardless of the pitch the instrument is
 playing.
@@ -126,9 +127,9 @@ the volume to 5, then down to 0, and that is when the instrument
 will stop.
 
 It's a good idea to end these envelopes with a 0, to reduce pops.
-By default, LOOP is set to "True".</li>
+By default, LOOP is set to "True".
 
-<li>The Constant operation allows you to make other modules behave like the
+- The Constant operation allows you to make other modules behave like the
 Envelope module, where time is based in song-steps. Constant also has
 both the RATE and the LOOP options, which work just like they do in
 Envelope.
@@ -139,14 +140,14 @@ if we do:
       <code>[0,1,2,3]+c[2,3,4,5]</code>
 The first pattern is going to update at a different speed than the
 second, so even though they are the same lengths, they are not going
-to finish at the same time.</li>
+to finish at the same time.
 
-<li>The Cross operation is to be combined with another operator
+The Cross operation is to be combined with another operator
 ("x*" or "xl", etc.). With Cross, we will step through each item in A
 before stepping to the next B. For example, see how the addition of
 these two patterns is is different with and without Cross:
 
-                      Simple Addition             Cross Addition
+                     Simple Addition             Cross Addition
           Patterns: [1,2,3,4]+[0,1,2]    vs    [1,2,3,4]x+[0,1,2]
                      Step:     Result:           Step:     Result:
                      1+0         1                1+0        1
@@ -161,7 +162,7 @@ these two patterns is is different with and without Cross:
                      2+0         2                2+2        4
                      3+1         4                3+2        5
                      4+2         6                4+2        6
-</li></ul>
+
 
 <h2>VI. Instruments</h2>
 
