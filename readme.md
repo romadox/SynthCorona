@@ -321,13 +321,13 @@ then "C" again, then it will repeat a second time, using "D" instead of "C".
 The configuration block lets you set up details about the overall song.
 Parameters are:
 
-      "TEMPO" -- Song tempo, in beats per minute. Defaults to 120.
-      "BEAT"  -- Beat length, in song steps (each space/letter). Default: 4.
-      "RATE"  -- Sample rate of the WAV file. Defaults to 44100.
-      "DEPTH" -- Bit depth of the WAV file, in bits. Default is 16.
-      "NORMALIZE" -- Whether to normalize the output.
-      "STEREO" -- Sets the song to Stereo.
-      "MONO" -- Sets the song to Mono.
+      TEMPO -- Song tempo, in beats per minute. Defaults to 120.
+      BEAT  -- Beat length, in song steps (each space/letter). Default: 4.
+      RATE  -- Sample rate of the WAV file. Defaults to 44100.
+      DEPTH -- Bit depth of the WAV file, in bits. Default is 16.
+      NORMALIZE -- Whether to normalize the output.
+      STEREO -- Sets the song to Stereo.
+      MONO -- Sets the song to Mono.
 
 Parameters are set with the following format:
 
