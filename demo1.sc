@@ -17,7 +17,7 @@ INS  // The Instrument Block
 A: [4,-4]
 
 // This is a triangle wave.
-// This time we did set the period ("<prd=8>").
+// This time we did set the period ("<prd=4>").
 B <prd=4>: [0i9,9i0,0i-9,-9i0]
 
 SEQ A // The Sequence Block
