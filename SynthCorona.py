@@ -5,6 +5,10 @@
     and patterns.
 
 """
+
+#TODO: SeqLine does not handle ADJUST steps -- should it?
+#TODO: Should SeqLine step pitch & pan by delta*frameslice?
+#      What happens if we apply Speed(Seq,2) etc?
 import wave
 import sys, random, time
 
@@ -60,6 +64,156 @@ class SCParseError(Exception):
     def __str__(self):
         """ Returns the error message (with line number). """
         return self.message
+
+class SCModule:
+    """ Base class for Modules in SynthCorona.
+
+        Modules are used to create Instruments, Sequences, and Song Patterns,
+        as well as controlling pitch.
+
+        Each module generally performs a single simple function, but they can
+        be combined and nested to create complex patterns and operations.
+    """
+
+    def step(self, delta, const-=1):
+        """ Steps the module forward in time.
+
+            Delta is the local time amount by which to step, which is used
+            by most modules. However, certain modules are designed to operate
+            independently of things like pitch require a constant time amount,
+            which is provided by const.
+
+            Additionally, some negative const values are used to send modules
+            the following commands:
+                DELTA (const = -1): Use the delta value for const value.
+                STOP (const = -2): Tells the module to stop, or Insts to release.
+                ADJUST (const = -3): Indicates a special time-adjustment. This
+                        tells modules to advance by delta exactly, without applying
+                        any rate modifications. When const=ADJUST, we generally
+                        assume that delta=get_extra() from some previous module,
+                        or from this module, before it was reset.
+
+            Arguments:
+            delta -- Local time slice.
+            const -- Constant time value, or command signal.
+        """
+        raise NotImplementedException()
+
+    def step_tails(self, delta, const=-1):
+        """ Steps any tails in the module forward in time.
+
+            Tails are sustaining sounds in Instruments & Sequences that have
+            been released but are not yet silent.
+
+            Arguments:
+            delta -- Local time slice.
+            const -- Constant time value.
+        """
+        raise NotImplementedException()
+
+    def read(self, tails=False,stereo=True,signal=True):
+        """ Reads the module at its current position.
+
+            (Occasionally, other upkeep steps are occur here as well. See
+            individual modules for details.)
+
+            The tails argument determines whether we will read sustaining notes
+            or active instruments. One important thing to note is that certain
+            modules like Val do not behave differently based on tails. In
+            certain cases this means Val ends up getting read twice and is
+            doubled. To prevent this, modules that do not apply to tails have
+            a property "no_tails". Use getattr() to check for this field, and
+            do not perform a second read() on it if you find it. (An example of
+            this process can be found in Pattern.)
+
+            The signal argument is not currently used. It was added for a change
+            that did not end up being beneficial, but I have left it in in case
+            it becomes useful. As a note, signals are represented within the
+            range [-9,9], which corresponds to how they are depicted in SC code.
+
+            Arguments:
+            tails -- Whether we are reading tails or active sounds.
+            stereo -- Whether we are reading in stereo.
+            signal -- Whether we are reading a signal value, or a simple number.
+        """
+        raise NotImplementedException()
+
+    def reset(self):
+        """ Performs a small reset on a module.
+
+            This is interpreted as a simple refreshing of the cycle throughout
+            the song. Some modules do not entirely clear all of their parameters
+            during reset(), but merely prepare themselves to begin again.
+
+            When a module needs to be full re-initialized, clear() is the
+            appropriate method to use.
+
+            When resetting a finished module, it is often necessary to account
+            for the small amount of time that has passed the completion mark
+            (this avoids subtle distortions due to accumulating lost time).
+            The standard process for this is as follows:
+
+                extra = mdl.get_extra() # Store the amount of extra time.
+                mdl.reset()             # Reset the module.
+                mdl.step(extra,ADJUST)  # Adjust-step the module by extra
+
+            If you are moving to a new module (i.e., in Pattern), you will
+            do mdlB.step(extra,ADJUST), to pass the extra time on to the next
+            module.
+        """
+        raise NotImplementedException()
+
+    def clear(self):
+        """ Performs a full clear on the module.
+
+            This resets the module to its initial state. This function is a
+            deeper refresh than reset(), which is intended for basic cycling
+            of completed modules.
+        """
+        raise NotImplementedException()
+
+    def done(self):
+        """ Checks if the module is finished.
+        """
+        raise NotImplementedException()
+
+    def get_extra(self):
+        """ If the module is done, reports how much time we have advanced after
+            finishing.
+
+            In another sense -- this is how far the cursor has passed the end
+            of this module. Whenever a module finishes, generally there is some
+            extra time, which we will have to account for when resetting or
+            moving to a new module.
+
+            (See reset() for an outline of how to process this extra time.)
+        """
+        raise NotImplementedException()
+
+    def length(self):
+        """ Reports the module length.
+
+            Note: In certain situations, an accurate length cannot be known.
+            (For example, a Set with modules of different lengths.)
+        """
+        raise NotImplementedException()
+
+    def set_freq(self,freq):
+        """ For Instruments, sets the current frequency.
+
+            Since Instruments are often nested within other modules, this
+            must be a module function, so they can pass the frequency along
+            to any Insts they may contain.
+
+            Arguments:
+            freq -- The frequency (in Hz)
+        """
+        raise NotImplementedException()
+
+    def clone(self):
+        """ Creates a deep copy of the module and returns it.
+        """
+        raise NotImplementedException()
 
 class SynthCorona:
     """ Core SynthCorona class.
@@ -676,13 +830,11 @@ class SynthCorona:
         print("\nRENDER TIME: " + str(int(renderTime*100)/100) + "                        ")
 
     def parseModule(self, stng, type, line=0):
-        """ Central function for parsing a SynthCorona module from a string.
+        """ Parses a SynthCorona module from a string.
 
-            This method handles parsing binary operation modules,
-            and uses popModule to parse individual modules & unary operators.
-            Patterns, Sets, and Series' are separated with an "extract" method,
-            then parsed via a "parse" method (which will also call parseModule for
-            each of its elements.)
+            This is the method to use if you have a full description string to
+            parse. This uses popModule to isolate operands in binary operations
+            & then wraps them in operator modules as necessary.
 
             In this method, binary operators are parsed left-to-right, which is in
             turn the only order of operations in Synth-Corona.
@@ -691,10 +843,15 @@ class SynthCorona:
             Use any grouping module (Pattern, Set, Series) to change the order of
             operations if necessary.
 
+            Previously created modules/Insts/Sequences can be referenced by
+            name. They will be copied into the new module via clone().
+
             Arguments:
             stng -- String containing the module description.
             type -- Tells us what the module is for. Options: INST, TONE, SEQN, MDLE
             line -- Current parser line; for error reporting.
+
+            Returns the SynthCorona module.
         """
 
         # Parses the first standalone module & sends us [mdl, remaining string]
@@ -808,20 +965,49 @@ class SynthCorona:
         return modA
 
     def popModule(self, stng, type, line=0):
+        """ 'Pops' the first fully-described module off the front of the given
+            string and parses it.
+
+            This method handles parsing of all modules except binary operators,
+            which are handled by parseModule(). Given a string describing a
+            binary operation, this method will parse the first operand.
+
+            This method is called by parseModule() & is mostly intended to reduce
+            code repetition within that method.
+
+            Keyword arguments:
+            stng -- String containing the full module description.
+            type -- Tells us what this module is for. Options: INST, TONE, SEQN, MDLE.
+            line -- Current parser line; for error reporting.
+
+            Returns a 2-tuple: (parsed first module, remaining string).
+        """
+
+        # The module we're parsing.
         modA = None
+        # Whether we will need to wrap with an Invert (indicated by a '-')
         invert = False
+        # Constant-rate indicator. -1 means skip; Any positive value is read as
+        # the rate value for a Const module.
         const = -1
+        # If const != -1, this indicates whether our Const module should loop.
         cloop = True
+
         stng = stng.lstrip()
+        # Throw an error if we are grabbing an empty module.
         if(stng == "" or stng.isspace()):
             raise SCParseError("Empty module at " + self.curParseModule + ".",line)
             return (Val(0), "")
+        # A '-' indicates that we will invert the popped module (Invert).
         if(stng[0] == "-"):
             stng = stng[1:len(stng)]
             invert = True
+        # A 'c' indicates that we will apply a constant-rate module (Const).
         elif(stng[0] == "c"):
             const = 1
             stng = stng[1:len(stng)].lstrip()
+            # Const currently offers 2 meta tags: 'r' or 'rate' for the speed,
+            # and 'l' or 'loop' for whether to loop the results.
             if(stng[0] == "<"):
                 end = stng.find(">")
                 if(end<0):
@@ -838,12 +1024,15 @@ class SynthCorona:
                         mt = mt.split("=")[1].strip()
                         cloop = mt.startswith(("T","t","1"))
 
+        # For TONE or generic modules, 2-char pitch literal ("d4").
         if((type == TONE or type == MDLE) and stng[0:2] in self.tones):
             modA = Val(self.tones[stng[0:2]])
             stng = stng[2:len(stng)]
+        # For TONE or generic modules, 3-char pitch literal ("C#4")
         elif((type == TONE or type == MDLE) and stng[0:3] in self.tones):
             modA = Val(self.tones[stng[0:3]])
             stng = stng[3:len(stng)]
+        # Numeric literal
         elif(stng[0].isnumeric() or stng[0] == "."):
             num = ""
             while(len(stng)>0 and (stng[0].isnumeric() or stng[0] == ".")):
@@ -851,15 +1040,19 @@ class SynthCorona:
                 stng = stng[1:len(stng)]
             num = float(num)
             modA = Val(num)
+        # Pattern
         elif(stng[0] == "["):
             set = self.extractPattern(stng,line)
             stng, modA = set[1], self.parsePattern(set[0], type)
+        # Set
         elif(stng[0] == "{"):
             set = self.extractSet(stng,line)
             stng, modA = set[1], self.parseSet(set[0], type)
+        # Series
         elif(stng[0] == "("):
             set = self.extractSeries(stng,line)
             stng, modA = set[1], self.parseSeries(set[0], type)
+        # Otherwise, check if it is a reference to another module.
         else:
             i = 0
             while(i < len(stng) and stng[i] not in RESERVED):
@@ -894,7 +1087,6 @@ class SynthCorona:
                 elif(name in self.modules):
                     modA = self.modules[name].clone()
                 else:
-                    # this is an error
                     raise SCParseError("Invalid inst: " + name, line)
                     #print("Error! Invalid inst: " + name + ". Line: " + str(line))
             elif(type == TONE):
@@ -926,6 +1118,14 @@ class SynthCorona:
         return (modA, stng)
 
     def parseMeta(self, stng):
+        """ Separates out individual meta tags from a meta description.
+
+            Tags must be delimited by commas.
+
+            Arguments:
+            stng -- The meta description. This can include brackets, or not.
+        """
+
         stng = stng.lstrip()
 
         if(len(stng)<=0):
@@ -943,6 +1143,16 @@ class SynthCorona:
         return (meta, stng)
 
     def extractPattern(self, stng, line=0):
+        """ Separates out a Pattern description from a larger description
+            string, and trims away the brackets.
+
+            Arguments:
+            stng -- A module description.
+            line -- Current parser line, for error reporting.
+
+            Returns a 2-tuple: (pattern description, remaining string)
+        """
+
         inx = 0
         brackets = 0
 
@@ -962,6 +1172,16 @@ class SynthCorona:
             #print("Error: Expecting '[' in line " + str(line) + ".")
 
     def extractSet(self, stng, line=0):
+        """ Separates out a Set description from a larger description
+            string, and trims away the brackets.
+
+            Arguments:
+            stng -- A module description.
+            line -- Current parser line, for error reporting.
+
+            Returns a 2-tuple: (set description, remaining string)
+        """
+
         inx = 0
         brackets = 0
 
@@ -975,12 +1195,20 @@ class SynthCorona:
                 return (stng[1:inx-1], stng[inx:len(stng)])
         if(brackets > 0):
             raise SCParseError("Expected '}'.",line)
-            #print("Error: Expecting '}' in line " + str(line) + ".")
         else:
             raise SCParseError("Expected '{'.",line)
-            #print("Error: Expecting '{' in line " + str(line) + ".")
 
     def extractSeries(self, stng,line=0):
+        """ Separates out a Series description from a larger description
+            string, and trims away the brackets.
+
+            Arguments:
+            stng -- A module description.
+            line -- Current parser line, for error reporting.
+
+            Returns a 2-tuple: (series description, remaining string)
+        """
+
         inx = 0
         brackets = 0
 
@@ -994,12 +1222,21 @@ class SynthCorona:
                 return (stng[1:inx-1], stng[inx:len(stng)])
         if(brackets > 0):
             raise SCParseError("Expecting ')'.",line)
-            #print("Error: Expecting ')' in line " + str(line) + ".")
         else:
             raise SCParseError("Expecting '('.",line)
-            #print("Error: Expecting '(' in line " + str(line) + ".")
 
     def parseSongLine(self, stng, mdls, line=0):
+        """ Parses a list of Sequence modules, to be added to the Song.
+
+            This is called for each non-empty line of the SNG chunk, and newly
+            parsed Sequences are added to mdls.
+
+            Arguments:
+            stng -- String representing the line of Sequences.
+            mdls -- List of Song modules. We append new Sequences to this.
+            line -- Current parser line, for error reporting.
+        """
+
         bits = []
         brace = 0
         bracket = 0
@@ -1033,6 +1270,17 @@ class SynthCorona:
             mdls.append(self.parseModule(ln,SEQN,line))
 
     def parsePattern(self, stng, type, line=0):
+        """ Parse a Pattern module.
+
+            This uses parseModule() for each module, then wraps the list with
+            a Pattern module.
+
+            Arguments:
+            stng -- Pattern description string (bounding brackets removed)
+            type -- The type of module we're parsing. Options: INST, TONE, SEQN, MDLE.
+            line -- Current parser line, for error-reporting.
+        """
+
         bits = []
         brace = 0
         bracket = 0
@@ -1066,6 +1314,17 @@ class SynthCorona:
         return Pattern(ary)
 
     def parseSet(self, stng, type, line=0):
+        """ Parse a Set module.
+
+            This uses parseModule() for each module, then wraps the list with
+            a Set module.
+
+            Arguments:
+            stng -- Set description string (bounding brackets removed)
+            type -- The type of module we're parsing. Options: INST, TONE, SEQN, MDLE.
+            line -- Current parser line, for error-reporting.
+        """
+
         bits = []
         brace = 0
         bracket = 0
@@ -1100,6 +1359,17 @@ class SynthCorona:
         return Set(ary)
 
     def parseSeries(self, stng, type, line=0):
+        """ Parse a Series module.
+
+            This uses parseModule() for each module, then wraps the list with
+            a Series module.
+
+            Arguments:
+            stng -- Series description string (bounding brackets removed)
+            type -- The type of module we're parsing. Options: INST, TONE, SEQN, MDLE.
+            line -- Current parser line, for error-reporting.
+        """
+
         bits = []
         brace = 0
         bracket = 0
@@ -1133,8 +1403,30 @@ class SynthCorona:
             ary.append(self.parseModule(ln.strip(), type, line))
         return Series(ary)
 
-class SeqLine:
+class SeqLine(Module):
+    """ Represents a single line of a Sequence module.
+
+        This corresponds to a single line of the SEQ chunk of a SC file.
+        SeqLine has a single module determining pitch and can play only 1
+        instrument at a time. This is similar to a monophonic "voice" within
+        a piece, though different Instruments can be used in the same SeqLine.
+    """
+
     def __init__(self, parent, pitch, pat, pan=None):
+        """ Initializes with the given parent and pitch module and the given
+            pattern.
+
+            The pattern data is extracted by SynthCorona.parse() into a list.
+            Each index is either an Instrument or a string: "-" or " ",
+            with hyphens indicating sustain & spaces indicating release/silence.
+
+            Arguments:
+            parent -- The SynthCorona module to which this part belongs.
+            pitch -- Pitch module.
+            pat -- Pattern data list.
+            pan -- Pan module. Defaults to Val(0) (centered) if none is given.
+        """
+
         self.parent = parent
         self.seq = None
         self.pat = pat
@@ -1252,10 +1544,30 @@ class SeqLine:
         return SeqLine(self.parent, self.pitch.clone(), patclone, self.pan.clone())
 
     def to_string(self):
+        """ Compiles and returns a string representing this SeqLine.
+
+            This was probably for testing something -- it isn't pretty.
+        """
         return ("LINE: " + self.pitch.to_string() + ": " + self.pat.to_string())
 
-class Sequence:
+class Sequence(Module):
+    """ Contains sequence data (in the form of SeqLines) for a section/pattern
+        within a song.
+
+        Sequences are Modules, so they can be combined/manipulated as with
+        any other module, though this must be done under the BLK (Block) header
+        of a SC file.
+    """
+
     def __init__(self, lines, parent, pan=None):
+        """ Initializer.
+
+            Arguments:
+            lines -- The SeqLines that comprise this Sequence.
+            parent -- The SynthCorona parent.
+            pan -- Option panning module (pans the whole pattern).
+        """
+
         self.parent = parent
         self.lines = lines
         self.pan = pan
@@ -1294,7 +1606,7 @@ class Sequence:
             if(stereo):
                 sum = [0,0]
                 for t in self.tails:
-                    # we call read because tails should be an Inst module
+                    # we always set tails=F because tails should be an Inst--
                     # tails is more for Sequences
                     val = t.read(False,stereo,signal)
                     sum[0] += val[0]
@@ -1303,7 +1615,7 @@ class Sequence:
             else:
                 sum = 0
                 for t in self.tails:
-                    # we call read because tails should be an Inst module
+                    # we always set tails=F because tails should be an Inst--
                     # tails is more for Sequences
                     sum += t.read(False,stereo,signal)
                 return sum
@@ -1370,8 +1682,22 @@ class Sequence:
             tlines.append(l.clone())
         return Sequence(tlines, self.parent, self.pan.clone())
 
-class SeqBlock:
+class SeqBlock(Module):
+    """ Sequence wrapper for modules. When Sequence modules are parsed by the
+        BLK/PAT chunk, they will be packaged in this.
+
+        Like basic Sequences, this has a Sequence-level panning module, pan,
+        which defaults to centered.
+    """
+
     def __init__(self, module, pan=None):
+        """ Initializer.
+
+            Arguments:
+            module -- The module to be wrapped. Should contain Sequence data.
+            pan -- Optional panning module. Defaults to Val(0)
+        """
+
         self.module = module
         if(pan == None):
             pan = Val(0)
@@ -1414,8 +1740,21 @@ class SeqBlock:
     def clone(self):
         return SeqBlock(self.module.clone(),self.pan.clone())
 
-class Song:
+class Song(Module):
+    """ Module class representing a song.
+
+        This is primarily composed of a list of Sequences (or SeqBlock), which
+        are run and read one after the other.
+    """
+
     def __init__(self, pat, parent):
+        """ Initializer.
+
+            Arguments:
+            pat -- Sequence pattern that comprises the Song.
+            parent -- SynthCorona that is running this show.
+        """
+
         self.pat = pat
         self.curInx = 0
         self.parent = parent
@@ -1463,7 +1802,6 @@ class Song:
                 sum += t.read(True,stereo,signal)
             return sum
 
-
     def reset(self):
         self.clear()
 
@@ -1484,8 +1822,43 @@ class Song:
             sum += mdl.length()
         return sum
 
-class Inst:
+class Inst(Module):
+    """ Module representing an instrument/synth.
+
+        Along with core module functions, Insts also have set_freq(), which
+        sets the current pitch.
+
+        Insts also have several unique properties:
+        period -- Indicates the length of 1 period of the core waveform.
+        loop -- Whether this Inst should loop after its module has finished.
+        sus -- Whether this Inst should sustain (until module completion), after stop().
+        pan -- Instrument-level pan module.
+
+        Pitch is achieved by playing the module at a rate based on the frequency
+        and the wave period. This rate affects delta in step() calls, but it does
+        not affect const, (the constant-time argument).
+
+        Similarly, Inst always uses const to step, to prevent other adjustments
+        to delta from affecting the pitch. The main exception to this is the
+        Speed module, which does affect pitch (by changing the const value).
+
+        Because of the above, you can easily nest Insts within other Insts
+        without affecting pitch.
+    """
+
     def __init__(self, parent, module, prd=-1, loop=True, sus=False, pan=None):
+        """ Initializer.
+
+            Arguments:
+            parent -- SynthCorona parent.
+            module -- Module for creating the Inst's sound.
+            prd -- Period length. If -1, we will use module.length(), which will
+                work as long as the module describes exactly 1 oscillation.
+            loop -- Whether to loop our module. Default: True.
+            sus -- Whether to sustain our module. Default: False. If true, loop is overrided to False.
+            pan -- Instrument-level panning module. Defaults to centered.
+        """
+
         if(sus):
             loop = False
         self.parent = parent
@@ -1617,7 +1990,12 @@ class Inst:
     def stop(self):
         self.step(0,STOP)
 
-class Val:
+class Val(Module):
+    """ Module representing a single fixed value.
+
+        This module has length 1 and always returns its value on read().
+    """
+
     def __init__(self, val=0):
         self.val = val
         self.cur = 0
@@ -1662,8 +2040,23 @@ class Val:
     def set_freq(self, freq):
         pass
 
-class StereoVal:
+class StereoVal(Module):
+    """ Module representing a single value, in stereo.
+
+        Right now, the only we place we use this is when creating tails to fade
+        out instruments. It isn't necessary for general purposes, as simply
+        panning a Val module covers that better.
+
+        Like Val, StereoVal has a length of 1.
+    """
+
     def __init__(self, val=[0,0]):
+        """ Initializer.
+
+            Arguments:
+            val -- The value, as a 2-tuple or 2-list.
+        """
+
         self.val = val
         self.cur = 0
         self.no_tails = True
@@ -1707,9 +2100,24 @@ class StereoVal:
     def set_freq(self, freq):
         pass
 
-class Pattern:
-    # creates a new Pattern
+class Pattern(Module):
+    """ Represents a sequence of modules, to be played one after the other.
+
+        This differs from Series in that Pattern plays through each of its
+        modules before finishing. Series plays through its current module,
+        finishes, then plays the next one after reset().
+
+        Accordingly, the length of Pattern is the sum of the lengths of its
+        modules.
+    """
+
     def __init__(self, pat=(Val(0),Val(1))):
+        """ Initializer
+
+            Arguments:
+            pat -- The pattern, as a list of Modules.
+        """
+
         self.pat = pat
         self.curInx = 0
         self.extra = 0
@@ -1803,7 +2211,18 @@ class Pattern:
         for p in self.pat:
             p.set_freq(freq)
 
-class Set:
+class Set(Module):
+    """ Module for selecting random modules from a set.
+
+        Each time Set is reset (or initialized), a random module is selected,
+        and it will be played the next time through.
+
+        Note: If the modules in the Set have differing lengths, Set.length()
+        will yield unpredictable results. Generally, this is not a problem,
+        but it may cause some unexpected behavior (i.e., the progress bar
+        might exceed 100%).
+    """
+
     def __init__(self, set=[Val(0)]):
         self.set = set
         self.curMod = random.choice(self.set)
@@ -1870,7 +2289,21 @@ class Set:
         for m in self.set:
             m.set_freq(freq)
 
-class Series:
+class Series(Module):
+    """ Module for playing a series of modules as part of a longer pattern.
+
+        Series differs from Pattern in that Series plays modules one at a time--
+        when the current module is finished, Series is done(), and SC moves on.
+        Each time Series is reset, it moves on to the next module in the
+        sequence.
+
+        Note: clear() will fully reset Series, setting the first module to
+        current. Also, different clones of Series operate independently, which
+        means that Series might not work as planned in some situations.
+        Generally, if you have to reference the module containing Series multiple
+        times in the SC code, it won't work properly. Try rephrasing it to use
+        Repeat instead, if possible.
+    """
     def __init__(self, srs=[Val(0)]):
         self.srs = srs
         self.curInx = 0
@@ -1945,8 +2378,19 @@ class Series:
         for s in self.srs:
             s.set_freq(freq)
 
-class Invert:
+class Invert(Module):
+    """ Module for negation.
+
+        Multiplies all output by -1.
+    """
+
     def __init__(self, mdl):
+        """ Initializer.
+
+            Arguments:
+            mdl -- The module to negate.
+        """
+
         self.mdl = mdl
 
     def step(self, delta, const=-1):
@@ -1983,8 +2427,22 @@ class Invert:
     def set_freq(self, freq):
         self.mdl.set_freq(freq)
 
-class Level:
+class Level(Module):
+    """ Module for setting the volume of a module.
+
+        This uses signal values, so 9 is max volume; 0 is silence. Negative
+        level values will similarly invert the output.
+    """
+
     def __init__(self, mdl, env, alead=True):
+        """ Initializer.
+
+            Arguments:
+            mdl -- The input module.
+            env -- The volume level module.
+            alead -- If true, we stop when mdl stops; otherwise, when env stops.
+        """
+
         self.a = mdl
         self.b = env
         self.a_lead = alead
@@ -2048,8 +2506,28 @@ class Level:
         self.a.set_freq(freq)
         self.b.set_freq(freq)
 
-class Envelope:
+class Envelope(Module):
+    """ Volume envelope module.
+
+        This is similar to Level, except the volume module runs in constant
+        time, based on song steps. This lets you create an envelope that
+        doesn't vary based on Instrument pitch.
+
+        Like Level, this uses signal values, so 9 is max volume, 0 is silence.
+        Negative values will similarly invert the output.
+    """
+
     def __init__(self, mdl, env, rate=1, loop=False):
+        """ Initializer.
+
+            Arguments:
+            mdl -- The input module.
+            env -- The envelope module.
+            rate -- Playback rate for the envelope module. 1 is in time with
+                    song steps; 2 is twice as fast; 0.5 half, etc.
+            loop -- Whether to loop when the volume module is finished.
+        """
+
         self.a = mdl
         self.b = env
         # so you don't have to spend an hour searching in the future --
@@ -2118,8 +2596,23 @@ class Envelope:
         self.a.set_freq(freq)
         self.b.set_freq(freq)
 
-class Const:
+class Const(Module):
+    """ Plays a module in constant time, based on song steps.
+
+    """
+
     def __init__(self, mdl, frameslice, rate=1, loop=True):
+        """ Initializer.
+
+            Arguments:
+            mdl -- Input module.
+            frameslice -- Ratio between song steps and samples (I think...
+                    anyway, this should be SynthCorona.frameslice)
+            rate -- Playback rate. 1 is in time with song steps; 2 is twice as
+                    fast; 0.5 half, etc.
+            loop -- Whether to loop the module once it's finished.
+        """
+
         self.mdl = mdl
         self.rate = rate*frameslice
         self.frameslice = frameslice
@@ -2167,8 +2660,24 @@ class Const:
     def set_freq(self, freq):
         self.mdl.set_freq(freq)
 
-class Speed:
+class Speed(Module):
+    """ Module for changing playback rate.
+
+        This module modifies both delta and const in step(), so it DOES affect
+        pitch when applied to Inst. However, I have done some witchcraft so if
+        you apply Speed to a Sequence module, it will not be passed down to
+        Insts, so pitch will not be affected.
+    """
+
     def __init__(self, mdl, rate=Val(1), alead=True):
+        """ Initializer.
+
+            Arguments:
+            mdl -- Input module.
+            rate -- Playback rate module.
+            alead -- If true, we stop when mdl stops; otherwise, when rate stops.
+        """
+
         self.mdl = mdl
         self.rate = rate
         self.a_lead = alead
@@ -2235,8 +2744,22 @@ class Speed:
         self.mdl.set_freq(freq)
         self.rate.set_freq(freq)
 
-class LinInterp:
+class LinInterp(Module):
+    """ Module for linear interpolation between two modules.
+
+        Both modules are updated for the duration. Their outputs are blended
+        based on how far we are through the LinInterp width.
+    """
+
     def __init__(self, a, b, wid=1):
+        """ Initializer.
+
+            Arguments:
+            a -- The start module.
+            b -- The end module.
+            wid -- Interpolation width (length).
+        """
+
         self.a = a
         self.b = b
         self.width = wid
@@ -2300,9 +2823,19 @@ class LinInterp:
         self.a.set_freq(freq)
         self.b.set_freq(freq)
 
-class Multiply:
-    # creates a new Multiply
+class Multiply(Module):
+    """ Module that multiplies two inputs together.
+    """
+
     def __init__(self, a, b, alead=True):
+        """ Initializer.
+
+            Arguments:
+            a -- Input A
+            b -- Input B
+            alead -- If true, we stop when A stops; otherwise when B stops.
+        """
+
         self.a = a
         self.b = b
         self.a_lead = alead
@@ -2366,9 +2899,18 @@ class Multiply:
         self.a.set_freq(freq)
         self.b.set_freq(freq)
 
-class Divide:
-    # creates a new Multiply
+class Divide(Module):
+    """ Module that divides two inputs.
+    """
+
     def __init__(self, a, b, alead=True):
+        """ Initializer.
+
+            Arguments:
+            a -- Input A.
+            b -- Input B.
+            alead -- If true, we stop when A stops; otherwise, when B stops.
+        """
         self.a = a
         self.b = b
         self.a_lead = alead
@@ -2429,9 +2971,19 @@ class Divide:
         self.a.set_freq(freq)
         self.b.set_freq(freq)
 
-class Add:
-    #creates a new Add
+class Add(Module):
+    """ Module that adds two inputs.
+    """
+
     def __init__(self, a, b, alead=True):
+        """ Initializer.
+
+            Arguments:
+            a -- Input A.
+            b -- Input B.
+            alead -- If true, we stop when A stops; otherwise, when B stops.
+        """
+
         self.a = a
         self.b = b
         self.a_lead = alead
@@ -2495,9 +3047,19 @@ class Add:
         self.a.set_freq(freq)
         self.b.set_freq(freq)
 
-class Subtract:
-    #creates a new Subtract
+class Subtract(Module):
+    """ Module that subtracts two inputs.
+    """
+
     def __init__(self, a, b, alead=True):
+        """ Initializer.
+
+            Arguments:
+            a -- Input A.
+            b -- Input B.
+            alead -- If true, we stop when A stops; otherwise, when B stops.
+        """
+
         self.a = a
         self.b = b
         self.a_lead = alead
@@ -2561,8 +3123,18 @@ class Subtract:
         self.a.set_freq(freq)
         self.b.set_freq(freq)
 
-class Repeat:
+class Repeat(Module):
+    """ Module that loops an input a given number of times.
+    """
+
     def __init__(self, mdl, x):
+        """ Initializer.
+
+            Arguments:
+            mdl -- Input module.
+            x -- The number of times to repeat.
+        """
+
         self.a = mdl
         self.b = x
         self.resets = 1
@@ -2611,14 +3183,33 @@ class Repeat:
         self.a.set_freq(freq)
         self.b.set_freq(freq)
 
-class Cross:
-    def __init__(self, operator):
-        if(hasattr(operator, "a") and hasattr(operator, "b")):
-            self.op = operator
+class Cross(Module):
+    """ Module for "crossing" a binary operation.
+
+        Normal binary operators run both operand modules (A and B)
+        simultaneously. Cross operations slow down the B module so that A
+        completes a full cycle for each step of B. In a sense, we compute
+        "all of A for each of B".
+
+        Here's an example:
+        Consider [1,2,3,4]*[1,0] --
+        Regularly, our output is [1*1,2*0,3*1,4*0] = [1,0,3,0]
+        If we take the cross of this, [1,2,3,4]x*[1,0] --
+        We get [1*1,2*1,3*1,4*1,1*0,2*0,3*0,4*0] = [1,2,3,4, 0,0,0,0]
+    """
+
+    def __init__(self, mdl):
+        """ Initializer.
+
+            Arguments:
+            mdl -- Input module. Must be a binary operation.
+        """
+        if(hasattr(mdl, "a") and hasattr(mdl, "b")):
+            self.op = mdl
         else:
             raise SCParseError("Invalid Operator for Cross module.",line)
             #print("Error: Invalid Cross Operation (\"x\")")
-            self.op = operator
+            self.op = mdl
         self.bstep = -1
         self.cur = 0
         self.len = -1
@@ -2679,23 +3270,48 @@ class Cross:
         self.op.set_freq(freq)
 
 def gcd(a, b):
+    """ Calculates greatest common denominator.
+
+        Arguments:
+        a -- Input A.
+        b -- Inpubt B.
+    """
     while(b > 0):
         a, b = b, a % b
     return a
 
 def lcm(a, b):
-    #print("LCM of " + str(a) + ", " + str(b) + " = " + str(a*b/gcd(a,b)))
+    """ Calculates least common multiple.
+
+        Arguments:
+        a -- Input A.
+        b -- Input B.
+    """
+
     return a*b/gcd(a,b)
 
 def as_decimal(val):
+    """ Converts SC signal values into decimals.
+
+        Signal values range from -9 to 9, so this simply returns the input
+        divided by 9.
+
+        Arguments:
+        val -- The value to convert to decimal.
+    """
+
     dec = val/MAX_VAL
-    #if(dec > 1):
-    #    dec = 0.99999999
-    #elif(dec < -1):
-    #    dec = -0.99999999
     return dec
 
 def limit(val):
+    """ Hard limits the given signal value.
+
+        This limits to +/-0.9999 * MAX.
+
+        Arguments:
+        val -- The signal value to limit.
+    """
+
     if(val >= MAX_VAL):
         return MAX_VAL * 0.9999
     elif(val <= -MAX_VAL):
@@ -2704,9 +3320,33 @@ def limit(val):
         return val
 
 def calc_freq(disp):
+    """ Calculates the frequency of a given pitch.
+
+        This calculation is performed in cents, and uses A4 for reference. As
+        such, input must be expressed in terms of distance to A4--so:
+            0 = A4
+            300 = C5
+            -1200 = A3
+            etc.
+
+        Currently, we pre-bake all frequencies when SynthCorona starts up, so
+        this is only used initially--afterward, we pull frequencies from a list.
+
+        Arguments:
+        disp -- The pitch, expressed as "cents from A4".
+    """
     return 440.0 * (2**(1/1200.0))**disp
 
 def pan(vals, pan):
+    """ Calculates panning.
+
+        Pan amounts range from -9 (100% L) to 9 (100% R). Excessive values
+        will be clipped.
+
+        Arguments:
+        vals -- The stereo pair of signal values.
+        pan -- The panning adjustment.
+    """
     # pan values should range from -9 (100% L) to 9 (100% R)
     pan /= 9
     # clips pan to a max of 100% in either direction
