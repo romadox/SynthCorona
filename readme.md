@@ -1,4 +1,4 @@
-<h1>SYNTH-CORONA</h1>
+<h1>Synth-Corona</h1>
 <h2>I. What is it?</h2>
 
 Synth-Corona is a text-based music composer, sequencer, and synthesizer.
