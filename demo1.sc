@@ -3,24 +3,24 @@
 // (Everything following a '//' is a comment and is ignored)
 
 
-CFG  // The Configuration Block
+CFG  // Configuration Chunk
 
 TEMPO: 120  // 120 Beats Per Minute
 BEAT:  4    // Four steps per Beat--each space/letter is a step!
 NORM: T     // Normalize the audio to max volume without clipping.
 
 
-INS  // The Instrument Block
+INS  // Instrument Chunk
 
 // This is a pulse wave--it jumps up to 4, then down to -4, then it repeats!
 // We didn't set a period, so the parser will use the length of our pattern.
 A: [4,-4]
 
-// This is a triangle wave.
+// This is a triangle wave. It uses "i" to smoothly interpolate between values.
 // This time we did set the period ("<prd=4>").
 B <prd=4>: [0i9,9i0,0i-9,-9i0]
 
-SEQ A // The Sequence Block
+SEQ A // Sequence Chunk, defining Sequence "A"
    // Our Melody, with Instrument A
 G4:   |            A---|        A-      |
 F4:   |          A-    |          A-    |
