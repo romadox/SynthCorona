@@ -27,10 +27,9 @@ can also be grouped into Blocks, for more complex arrangements.
 
 The Config chunk describes properties like tempo and beat length.
 
-The Instrument chunk describes the synthesizers that will play the sound. This
-is done by creating a pattern of values between -9 and 9, which will be
-used as the sample intensities in the sound wave. There are a variety of
-operations that can be used in this process.
+The Instrument chunk describes the synthesizers that will play the sound. Unlike 
+most synthesizers, which give you a waveform and let you manipulate it, Synth-Corona
+instruments are built from scratch using various modules to form the wave.
 
 In the Module chunk, generic modules can be created, which can then be used in 
 Instruments and Sequences, or for controlling pitch or panning.
