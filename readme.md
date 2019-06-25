@@ -20,16 +20,20 @@ create a WAV file of the song.
 
 <h2>II. Overview</h2>
 
-Synth-Corona files are made up of Config, Instrument, Sequence, and Song
-blocks, each indicated by a header line. A Song is made up of Sequences, and
-Sequences indicate which Instrument will play which note at a given time.
+Synth-Corona files are made up of Config, Module, Instrument, Sequence, and Song
+chunks, each indicated by a header line. A Song is made up of Sequences, and
+Sequences indicate which Instrument will play which note at a given time. Sequences
+can also be grouped into Blocks, for more complex arrangements.
 
-The Config block describes properties like tempo and beat length.
+The Config chunk describes properties like tempo and beat length.
 
-Instrument blocks describe the synthesizers that will play the sound. This
+The Instrument chunk describes the synthesizers that will play the sound. This
 is done by creating a pattern of values between -9 and 9, which will be
 used as the sample intensities in the sound wave. There are a variety of
 operations that can be used in this process.
+
+In the Module chunk, generic modules can be created, which can then be used in 
+Instruments and Sequences, or for controlling pitch or panning.
 
 <h2>III. Headers</h2>
 
@@ -40,8 +44,9 @@ Headers indicate which chunk is to follow. They are as follows:
 <li>MDL : Module Chunk</li>
 <li>SEQ : Sequence Chunk (each header describes one Sequence)</li>
 <li>BLK/PAT: Sequence Block Chunk (for creating song patterns out of Sequences)</li>
-<li>SNG : Song Block</li>
-<li>IMP : Import Block (all on one line).</li>
+<li>SNG : Song Chunk</li>
+<li>IMP : Import 
+      (all on one line).</li>
 </ul>
 
 <h2>IV. Naming</h2>
