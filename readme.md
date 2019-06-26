@@ -1,24 +1,34 @@
 <h1>Synth-Corona</h1>
 <h2>I. What is it?</h2>
 
-Synth-Corona is a text-based music composer, sequencer, and synthesizer.
-Simply type a document in a text-editor (mono-type editors work best),
-and the Synth-Corona script (sc.py) will render it into a WAV audio file.
+Synth-Corona is a code language for creating chiptunes from scratch in your favorite
+mono-space text editor. It features a highly modular design, allowing a wide range 
+of control over sounds, pitch, panning, sequences, and song structure.
 
-Synth-Corona uses a specific parsing language to create synthesizers,
-patterns, and songs. This guide covers the specifics of the parsing
-language, but it might be a bit confusing without first seeing what
-we're talking about.
+The renderer script parses Synth-Corona code into a WAV audio file.
 
-As such, I recommend opening up "demo1.txt" right now. It is a complete
-SynthCorona music file, which plays a short tune. Look it over, then pop
-back over here to figure out what exactly is going on over there.
+<h2>II. Get Started</h2>
 
-Whenever you want to render a song, simply run "sc.py" from Python3,
-then enter the path/name of the file you want to render. The script will
-create a WAV file of the song.
+The renderer is built in Python3, so you'll need that to run it. You can use <a href="https://www.python.org/download/releases/3.0/">standard 
+Python</a>, but I recommend <a href="https://pypy.org/">pypy3</a> instead. Synth-Corona 
+is very CPU demanding, and pypy tends to run SC about 10x as fast as regular Python.
+      
+To get Synth-Corona, download <b>SynthCorona.py</b> and <b>sc.py</b>. SynthCorona.py is the 
+nuts-and-bolts, and sc.py is the runnable renderer. They'll need to be in the same folder.
+To run it, use:
+      <code>python3 /your/filepath/sc.py</code> for regular Python.
+      <code>pypy3 /your/filepath/sc.py</code> for PyPy.
 
-<h2>II. Overview</h2>
+This will prompt you for the Synth-Corona file you would like to render. If you like,
+you can also send your SC file from the command line:
+      <code>python3 /your/filepath/sc.py /your/sc/filepath/song.sc</code>
+      
+To test out your setup and get a quick feel for what Synth-Corona code looks like,
+download hello.sc, or one of the other demo files, and give it a go! The rest of this
+guide goes over writing Synth-Corona code, so I highly recommend browsing over some of
+the samples first.
+
+<h2>III. Headers & Chunks</h2>
 
 Synth-Corona files are made up of Config, Module, Instrument, Sequence, and Song
 chunks, each indicated by a header line. A Song is made up of Sequences, and
@@ -34,32 +44,32 @@ instruments are built from scratch using various modules to form the wave.
 In the Module chunk, generic modules can be created, which can then be used in 
 Instruments and Sequences, or for controlling pitch or panning.
 
-<h2>III. Headers</h2>
-
-Headers indicate which chunk is to follow. They are as follows:
+Each chunk begins with a header. They are as follows:
 <ul>
-<li>CFG : Configuration Chunk (this must come before Instrument, Sequence, and Song chunks!)</li>
-<li>INS : Instrument Chunk</li>
-<li>MDL : Module Chunk</li>
-<li>SEQ : Sequence Chunk (each header describes one Sequence)</li>
-<li>BLK/PAT: Sequence Block Chunk (for creating song patterns out of Sequences)</li>
+<li>CFG : Configuration (this must come before Instrument, Sequence, and Song chunks!)</li>
+<li>INS : Instrument</li>
+<li>MDL : Generic Module</li>
+<li>SEQ : Sequence (each header describes one Sequence)</li>
+<li>BLK/PAT: Sequence Block (for creating song patterns out of Sequences)</li>
 <li>SNG : Song Chunk</li>
-<li>IMP : Import 
-      (all on one line).</li>
+<li>IMP : Import (all on one line).</li>
 </ul>
 
 <h2>IV. Naming</h2>
 
 As you create Instruments and Sequences, you'll give them names so you can
-refer to them elsewhere. For both, it is best to use a single character as
-the name. Additionally, you cannot use any of the reserved characters, which
-indicate operations. As a general rule, capital letters are free to use,
-though a few lower-case letters are reserved.
+refer to them elsewhere. Instruments that will be used in a Sequence must 
+be named with a single character (for alignment). Other modules/Instruments 
+can have longer names.
+
+You cannot use any of the reserved characters, which indicate operations. For
+best practice, do not use lowercase characters in names, as lowercase is for
+operators.
 
 You can use the same name for an Instrument and a Sequence, but obviously
 not the same name for two of the same kind.
 
-Here are the current reserved characters: <code>+-*/frixlvcs{}[]()\<>.,|</code>
+Here are the current reserved characters: <code>+-*/rixlvcs{}[]()\<>.,|</code>
 
 <h2>V. Operators</h2>
 
@@ -146,7 +156,7 @@ The first pattern is going to update at a different speed than the
 second, so even though they are the same lengths, they are not going
 to finish at the same time.
 
-The Cross operation is to be combined with another operator
+- The Cross operation is to be combined with another operator
 ("x*" or "xl", etc.). With Cross, we will step through each item in A
 before stepping to the next B. For example, see how the addition of
 these two patterns is is different with and without Cross:
