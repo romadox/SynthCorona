@@ -24,7 +24,7 @@ you can also send your SC file from the command line:
       <code>python3 /your/filepath/sc.py /your/sc/filepath/song.sc</code>
       
 To test out your setup and get a quick feel for what Synth-Corona code looks like,
-download hello.sc, or one of the other demo files, and give it a go! The rest of this
+download <b>demo1.sc</b>, or one of the other demo files, and give it a go! The rest of this
 guide goes over writing Synth-Corona code, so I highly recommend browsing over some of
 the samples first.
 
