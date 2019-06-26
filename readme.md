@@ -15,9 +15,10 @@ is very CPU demanding, and pypy tends to run SC about 10x as fast as regular Pyt
       
 To get Synth-Corona, download <b>SynthCorona.py</b> and <b>sc.py</b>. SynthCorona.py is the 
 nuts-and-bolts, and sc.py is the runnable renderer. They'll need to be in the same folder.
-To run it, use:
-      <code>python3 /your/filepath/sc.py</code> for regular Python.
-      <code>pypy3 /your/filepath/sc.py</code> for PyPy.
+
+To run it, use: <code>python3 /your/filepath/sc.py</code> for regular Python.
+
+Or: <code>pypy3 /your/filepath/sc.py</code> for PyPy.
 
 This will prompt you for the Synth-Corona file you would like to render. If you like,
 you can also send your SC file from the command line:
