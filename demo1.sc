@@ -1,36 +1,37 @@
-// Hello! This is a very simple SynthCorona file.
-// Please feel free to play around with it, and see what happens!
-// (Everything following a '//' is a comment and is ignored)
+// Hello! Welcome to Synth-Corona.
+// This is a very simple demo file--it plays my town tune from Animal Crossing
+
+// Everything after a "//" is a comment and is ignored by the renderer.
+
+// We're going to use the Core Sounds library, "core.sc". You'll need to download
+// that file and have it in the same folder as this one.
+
+IMP core.sc   // Import the Core Sounds library.
+
+CFG   // Config Chunk, to set up song info
+
+TEMPO: 95   // Set the tempo
+NORM: T     // Normalize audio (to max volume)
 
 
-CFG  // Configuration Chunk
+INS   // Instrument chunk, to create sounds.
 
-TEMPO: 120  // 120 Beats Per Minute
-BEAT:  4    // Four steps per Beat--each space/letter is a step!
-NORM: T     // Normalize the audio to max volume without clipping.
+// Let's use a basic Triangle Wave from Core Sounds, "WV_TRI".
+// Here "A" is the name we're giving our new instrument.
+// The meta-tag "<BASE=WV_TRI>" will copy properties from WV_TRI.
+// After the colon, we create our Instrument. In this case, we are loading in WV_TRI.
+A <BASE=WV_TRI>: WV_TRI
 
 
-INS  // Instrument Chunk
+SEQ A   // Sequence chunk. The "A" is this Sequence's name.
 
-// This is a pulse wave--it jumps up to 4, then down to -4, then it repeats!
-// We didn't set a period, so the parser will use the length of our pattern.
-A: [4,-4]
+F5: |          |  A-        |            |
+E5: |    A-    |A-  A-      |            |
+D5: |      A---|      A-    |            |
+C5: |  A-      |        A---|            |
+B4: |          |            |A-          |
+A4: |A-        |            |      A-----|
+G4: |          |            |  A---      |
 
-// This is a triangle wave. It uses "i" to smoothly interpolate between values.
-// This time we did set the period ("<prd=4>").
-B <prd=4>: [0i9,9i0,0i-9,-9i0]
 
-SEQ A // Sequence Chunk, defining Sequence "A"
-   // Our Melody, with Instrument A
-G4:   |            A---|        A-      |
-F4:   |          A-    |          A-    |
-E4:   |        A-      |            A---|
-D4:   |    A---        |    A---        |
-C4:   |A---            |A---            |
-
-   // Our Bass-Line, with Instrument B
-G3:   |    B B     B B |        B B     |
-D3:   |        B B     |    B B         |
-C3:   |B B             |B B         B-  |
-
-SNG A,A,A,A    // For the song, we just play A four times.
+SNG A   // The song chunk. Here we are telling the song to play Sequence "A".
