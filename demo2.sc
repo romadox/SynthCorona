@@ -23,7 +23,7 @@ B: [2,-2]
 
 // Now, for a little hat sound, we'll use core sounds again.
 // Here we also use "l", the level operator, to reduce the volume to 4 (from 9).
-C <BASE=WV_NSE_BLOCK_32>: WV_NSE_BLOCK_16vEV_PER_STACl5
+C <BASE=WV_NSE_BLOCK_16>: WV_NSE_BLOCK_16vEV_PER_STACl5
 
 
 // Now that we have our Instruments, let's sequence the song.
