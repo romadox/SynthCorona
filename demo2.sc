@@ -15,14 +15,14 @@ INS
 A <BASE=WV_TRI_2_3>: WV_TRI_2_3vEV_SMTH_LEGATO
 
 // For a bass sound, we'll create a square wave from scratch.
-// This is simply a pattern, which repeats the numbers 4 and -4.
+// This is simply a pattern, which repeats the numbers 2 and -2.
 // These numbers represent the signal values that make up a soundwave,
 // And since there are no gradual transitions between the numbers, 
 // we get a square wave.
 B: [2,-2]
 
 // Now, for a little hat sound, we'll use core sounds again.
-// Here we also use "l", the level operator, to reduce the volume to 4 (from 9).
+// Here we also use "l", the level operator, to reduce the volume to 5 (from 9).
 C <BASE=WV_NSE_BLOCK_16>: WV_NSE_BLOCK_16vEV_PER_STACl5
 
 
