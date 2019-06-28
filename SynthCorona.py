@@ -686,9 +686,9 @@ class SynthCorona:
         # to add decay, so it can't be declared within the loop.)
         dec = -1
         # Maximum signal absolute value
-        max = 2**(self.depth-1)-1
+        maxI = 2**(self.depth-1)-1
         # Express max as a ratio of parser MAX_VAL; to save computations
-        max = max / MAX_VAL
+        max = maxI / MAX_VAL
         # Number of bytes in audio file depth.
         bytes = int(self.depth/8)
         # Whether WAV values are signed or unsigned
@@ -704,8 +704,8 @@ class SynthCorona:
                     valL = int(max*limit(dec[0]))
                     valR = int(max*limit(dec[1]))
                     if(bytes == 1):
-                        valL += max
-                        valR += max
+                        valL += maxI
+                        valR += maxI
                     valL = valL.to_bytes(bytes, byteorder="little", signed=sgned)
                     valR = valR.to_bytes(bytes, byteorder="little", signed=sgned)
                     frames.append(valL)
@@ -724,7 +724,7 @@ class SynthCorona:
                 if(not self.normalize):
                     val = int(max*limit(dec))
                     if(bytes == 1):
-                        val += max
+                        val += maxI
                     val = val.to_bytes(bytes, byteorder="little", signed=sgned)
                     frames.append(val)
                 # Normalize ON -- Read sample & prepare for normalization
@@ -767,8 +767,8 @@ class SynthCorona:
                     valL = int(dec[0]*max)
                     valR = int(dec[1]*max)
                     if(bytes == 1):
-                        valL += max
-                        valR += max
+                        valL += maxI
+                        valR += maxI
                     valL = valL.to_bytes(bytes, byteorder="little", signed=sgned)
                     valR = valR.to_bytes(bytes, byteorder="little", signed=sgned)
                     frames.append(valL)
@@ -778,7 +778,7 @@ class SynthCorona:
                     dec = sp*rtio
                     val = int(dec*max)
                     if(bytes == 1):
-                        val += max
+                        val += maxI
                     val = val.to_bytes(bytes, byteorder="little", signed=sgned)
                     frames.append(val)
         # Add a bit of decay to the end of the song, to avoid popping.
@@ -793,8 +793,8 @@ class SynthCorona:
                 valL = int(max*tmp[0])
                 valR = int(max*tmp[1])
                 if(bytes == 1):
-                    valL += max
-                    valR += max
+                    valL += maxI
+                    valR += maxI
                 valL = valL.to_bytes(bytes, byteorder="little", signed=sgned)
                 valR = valR.to_bytes(bytes, byteorder="little", signed=sgned)
                 frames.append(valL)
@@ -804,7 +804,7 @@ class SynthCorona:
                 tmp *= dec
                 val = int(max*dec)
                 if(bytes == 1):
-                    val += max
+                    val += maxI
                 val = val.to_bytes(bytes, byteorder="little", signed=sgned)
                 frames.append(val)
 
