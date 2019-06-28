@@ -1,0 +1,1458 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module SynthCorona</title>
+<meta charset="utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>SynthCorona</strong></big></big></font></td
+></tr></table>
+    <p><tt>SYNTH-CORONA:&nbsp;MUSICAL&nbsp;TYPEWRITER<br>
+&nbsp;<br>
+This&nbsp;is&nbsp;a&nbsp;little&nbsp;code&nbsp;language&nbsp;for&nbsp;creating&nbsp;chiptunes.&nbsp;It&nbsp;features&nbsp;a&nbsp;highly<br>
+modular&nbsp;design&nbsp;which&nbsp;can&nbsp;be&nbsp;applied&nbsp;to&nbsp;instruments,&nbsp;pitches,&nbsp;sequences,<br>
+and&nbsp;patterns.</tt></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="random.html">random</a><br>
+</td><td width="25%" valign=top><a href="sys.html">sys</a><br>
+</td><td width="25%" valign=top><a href="time.html">time</a><br>
+</td><td width="25%" valign=top><a href="wave.html">wave</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="SynthCorona.html#SCModule">SCModule</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="SynthCorona.html#Add">Add</a>
+</font></dt><dt><font face="helvetica, arial"><a href="SynthCorona.html#Const">Const</a>
+</font></dt><dt><font face="helvetica, arial"><a href="SynthCorona.html#Cross">Cross</a>
+</font></dt><dt><font face="helvetica, arial"><a href="SynthCorona.html#Divide">Divide</a>
+</font></dt><dt><font face="helvetica, arial"><a href="SynthCorona.html#Envelope">Envelope</a>
+</font></dt><dt><font face="helvetica, arial"><a href="SynthCorona.html#Inst">Inst</a>
+</font></dt><dt><font face="helvetica, arial"><a href="SynthCorona.html#Invert">Invert</a>
+</font></dt><dt><font face="helvetica, arial"><a href="SynthCorona.html#Level">Level</a>
+</font></dt><dt><font face="helvetica, arial"><a href="SynthCorona.html#LinInterp">LinInterp</a>
+</font></dt><dt><font face="helvetica, arial"><a href="SynthCorona.html#Multiply">Multiply</a>
+</font></dt><dt><font face="helvetica, arial"><a href="SynthCorona.html#Pattern">Pattern</a>
+</font></dt><dt><font face="helvetica, arial"><a href="SynthCorona.html#Repeat">Repeat</a>
+</font></dt><dt><font face="helvetica, arial"><a href="SynthCorona.html#SeqBlock">SeqBlock</a>
+</font></dt><dt><font face="helvetica, arial"><a href="SynthCorona.html#SeqLine">SeqLine</a>
+</font></dt><dt><font face="helvetica, arial"><a href="SynthCorona.html#Sequence">Sequence</a>
+</font></dt><dt><font face="helvetica, arial"><a href="SynthCorona.html#Series">Series</a>
+</font></dt><dt><font face="helvetica, arial"><a href="SynthCorona.html#Set">Set</a>
+</font></dt><dt><font face="helvetica, arial"><a href="SynthCorona.html#Song">Song</a>
+</font></dt><dt><font face="helvetica, arial"><a href="SynthCorona.html#Speed">Speed</a>
+</font></dt><dt><font face="helvetica, arial"><a href="SynthCorona.html#StereoVal">StereoVal</a>
+</font></dt><dt><font face="helvetica, arial"><a href="SynthCorona.html#Subtract">Subtract</a>
+</font></dt><dt><font face="helvetica, arial"><a href="SynthCorona.html#Val">Val</a>
+</font></dt></dl>
+</dd>
+<dt><font face="helvetica, arial"><a href="SynthCorona.html#SynthCorona">SynthCorona</a>
+</font></dt><dt><font face="helvetica, arial"><a href="exceptions.html#Exception">exceptions.Exception</a>(<a href="exceptions.html#BaseException">exceptions.BaseException</a>)
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="SynthCorona.html#SCParseError">SCParseError</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Add">class <strong>Add</strong></a>(<a href="SynthCorona.html#SCModule">SCModule</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Module&nbsp;that&nbsp;adds&nbsp;two&nbsp;inputs.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Add-__init__"><strong>__init__</strong></a>(self, a, b, alead<font color="#909090">=True</font>)</dt><dd><tt>Initializer.<br>
+&nbsp;<br>
+Arguments:<br>
+a&nbsp;--&nbsp;Input&nbsp;A.<br>
+b&nbsp;--&nbsp;Input&nbsp;B.<br>
+alead&nbsp;--&nbsp;If&nbsp;true,&nbsp;we&nbsp;stop&nbsp;when&nbsp;A&nbsp;stops;&nbsp;otherwise,&nbsp;when&nbsp;B&nbsp;stops.</tt></dd></dl>
+
+<dl><dt><a name="Add-clear"><strong>clear</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Add-clone"><strong>clone</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Add-done"><strong>done</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Add-get_extra"><strong>get_extra</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Add-length"><strong>length</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Add-read"><strong>read</strong></a>(self, tails<font color="#909090">=False</font>, stereo<font color="#909090">=True</font>, signal<font color="#909090">=True</font>)</dt></dl>
+
+<dl><dt><a name="Add-reset"><strong>reset</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Add-set_freq"><strong>set_freq</strong></a>(self, freq)</dt></dl>
+
+<dl><dt><a name="Add-step"><strong>step</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+<dl><dt><a name="Add-step_tails"><strong>step_tails</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Const">class <strong>Const</strong></a>(<a href="SynthCorona.html#SCModule">SCModule</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Plays&nbsp;a&nbsp;module&nbsp;in&nbsp;constant&nbsp;time,&nbsp;based&nbsp;on&nbsp;song&nbsp;steps.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Const-__init__"><strong>__init__</strong></a>(self, mdl, frameslice, rate<font color="#909090">=1</font>, loop<font color="#909090">=True</font>)</dt><dd><tt>Initializer.<br>
+&nbsp;<br>
+Arguments:<br>
+mdl&nbsp;--&nbsp;Input&nbsp;module.<br>
+frameslice&nbsp;--&nbsp;Ratio&nbsp;between&nbsp;song&nbsp;steps&nbsp;and&nbsp;samples&nbsp;(I&nbsp;think...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;anyway,&nbsp;this&nbsp;should&nbsp;be&nbsp;<a href="#SynthCorona">SynthCorona</a>.frameslice)<br>
+rate&nbsp;--&nbsp;Playback&nbsp;rate.&nbsp;1&nbsp;is&nbsp;in&nbsp;time&nbsp;with&nbsp;song&nbsp;steps;&nbsp;2&nbsp;is&nbsp;twice&nbsp;as<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;fast;&nbsp;0.5&nbsp;half,&nbsp;etc.<br>
+loop&nbsp;--&nbsp;Whether&nbsp;to&nbsp;loop&nbsp;the&nbsp;module&nbsp;once&nbsp;it's&nbsp;finished.</tt></dd></dl>
+
+<dl><dt><a name="Const-clear"><strong>clear</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Const-clone"><strong>clone</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Const-done"><strong>done</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Const-get_extra"><strong>get_extra</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Const-length"><strong>length</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Const-read"><strong>read</strong></a>(self, tails<font color="#909090">=False</font>, stereo<font color="#909090">=True</font>, signal<font color="#909090">=True</font>)</dt></dl>
+
+<dl><dt><a name="Const-reset"><strong>reset</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Const-set_freq"><strong>set_freq</strong></a>(self, freq)</dt></dl>
+
+<dl><dt><a name="Const-step"><strong>step</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+<dl><dt><a name="Const-step_tails"><strong>step_tails</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Cross">class <strong>Cross</strong></a>(<a href="SynthCorona.html#SCModule">SCModule</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Module&nbsp;for&nbsp;"crossing"&nbsp;a&nbsp;binary&nbsp;operation.<br>
+&nbsp;<br>
+Normal&nbsp;binary&nbsp;operators&nbsp;run&nbsp;both&nbsp;operand&nbsp;modules&nbsp;(A&nbsp;and&nbsp;B)<br>
+simultaneously.&nbsp;<a href="#Cross">Cross</a>&nbsp;operations&nbsp;slow&nbsp;down&nbsp;the&nbsp;B&nbsp;module&nbsp;so&nbsp;that&nbsp;A<br>
+completes&nbsp;a&nbsp;full&nbsp;cycle&nbsp;for&nbsp;each&nbsp;step&nbsp;of&nbsp;B.&nbsp;In&nbsp;a&nbsp;sense,&nbsp;we&nbsp;compute<br>
+"all&nbsp;of&nbsp;A&nbsp;for&nbsp;each&nbsp;of&nbsp;B".<br>
+&nbsp;<br>
+Here's&nbsp;an&nbsp;example:<br>
+Consider&nbsp;[1,2,3,4]*[1,0]&nbsp;--<br>
+Regularly,&nbsp;our&nbsp;output&nbsp;is&nbsp;[1*1,2*0,3*1,4*0]&nbsp;=&nbsp;[1,0,3,0]<br>
+If&nbsp;we&nbsp;take&nbsp;the&nbsp;cross&nbsp;of&nbsp;this,&nbsp;[1,2,3,4]x*[1,0]&nbsp;--<br>
+We&nbsp;get&nbsp;[1*1,2*1,3*1,4*1,1*0,2*0,3*0,4*0]&nbsp;=&nbsp;[1,2,3,4,&nbsp;0,0,0,0]<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Cross-__init__"><strong>__init__</strong></a>(self, mdl)</dt><dd><tt>Initializer.<br>
+&nbsp;<br>
+Arguments:<br>
+mdl&nbsp;--&nbsp;Input&nbsp;module.&nbsp;Must&nbsp;be&nbsp;a&nbsp;binary&nbsp;operation.</tt></dd></dl>
+
+<dl><dt><a name="Cross-clear"><strong>clear</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Cross-clone"><strong>clone</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Cross-done"><strong>done</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Cross-get_extra"><strong>get_extra</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Cross-length"><strong>length</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Cross-read"><strong>read</strong></a>(self, tails<font color="#909090">=False</font>, stereo<font color="#909090">=True</font>, signal<font color="#909090">=True</font>)</dt></dl>
+
+<dl><dt><a name="Cross-reset"><strong>reset</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Cross-set_freq"><strong>set_freq</strong></a>(self, freq)</dt></dl>
+
+<dl><dt><a name="Cross-step"><strong>step</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+<dl><dt><a name="Cross-step_tails"><strong>step_tails</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Divide">class <strong>Divide</strong></a>(<a href="SynthCorona.html#SCModule">SCModule</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Module&nbsp;that&nbsp;divides&nbsp;two&nbsp;inputs.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Divide-__init__"><strong>__init__</strong></a>(self, a, b, alead<font color="#909090">=True</font>)</dt><dd><tt>Initializer.<br>
+&nbsp;<br>
+Arguments:<br>
+a&nbsp;--&nbsp;Input&nbsp;A.<br>
+b&nbsp;--&nbsp;Input&nbsp;B.<br>
+alead&nbsp;--&nbsp;If&nbsp;true,&nbsp;we&nbsp;stop&nbsp;when&nbsp;A&nbsp;stops;&nbsp;otherwise,&nbsp;when&nbsp;B&nbsp;stops.</tt></dd></dl>
+
+<dl><dt><a name="Divide-clear"><strong>clear</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Divide-clone"><strong>clone</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Divide-done"><strong>done</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Divide-get_extra"><strong>get_extra</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Divide-length"><strong>length</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Divide-read"><strong>read</strong></a>(self, tails<font color="#909090">=False</font>, stereo<font color="#909090">=True</font>, signal<font color="#909090">=True</font>)</dt></dl>
+
+<dl><dt><a name="Divide-reset"><strong>reset</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Divide-set_freq"><strong>set_freq</strong></a>(self, freq)</dt></dl>
+
+<dl><dt><a name="Divide-step"><strong>step</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+<dl><dt><a name="Divide-step_tails"><strong>step_tails</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Envelope">class <strong>Envelope</strong></a>(<a href="SynthCorona.html#SCModule">SCModule</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Volume&nbsp;envelope&nbsp;module.<br>
+&nbsp;<br>
+This&nbsp;is&nbsp;similar&nbsp;to&nbsp;<a href="#Level">Level</a>,&nbsp;except&nbsp;the&nbsp;volume&nbsp;module&nbsp;runs&nbsp;in&nbsp;constant<br>
+time,&nbsp;based&nbsp;on&nbsp;song&nbsp;steps.&nbsp;This&nbsp;lets&nbsp;you&nbsp;create&nbsp;an&nbsp;envelope&nbsp;that<br>
+doesn't&nbsp;vary&nbsp;based&nbsp;on&nbsp;Instrument&nbsp;pitch.<br>
+&nbsp;<br>
+Like&nbsp;<a href="#Level">Level</a>,&nbsp;this&nbsp;uses&nbsp;signal&nbsp;values,&nbsp;so&nbsp;9&nbsp;is&nbsp;max&nbsp;volume,&nbsp;0&nbsp;is&nbsp;silence.<br>
+Negative&nbsp;values&nbsp;will&nbsp;similarly&nbsp;invert&nbsp;the&nbsp;output.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Envelope-__init__"><strong>__init__</strong></a>(self, mdl, env, rate<font color="#909090">=1</font>, loop<font color="#909090">=False</font>)</dt><dd><tt>Initializer.<br>
+&nbsp;<br>
+Arguments:<br>
+mdl&nbsp;--&nbsp;The&nbsp;input&nbsp;module.<br>
+env&nbsp;--&nbsp;The&nbsp;envelope&nbsp;module.<br>
+rate&nbsp;--&nbsp;Playback&nbsp;rate&nbsp;for&nbsp;the&nbsp;envelope&nbsp;module.&nbsp;1&nbsp;is&nbsp;in&nbsp;time&nbsp;with<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;song&nbsp;steps;&nbsp;2&nbsp;is&nbsp;twice&nbsp;as&nbsp;fast;&nbsp;0.5&nbsp;half,&nbsp;etc.<br>
+loop&nbsp;--&nbsp;Whether&nbsp;to&nbsp;loop&nbsp;when&nbsp;the&nbsp;volume&nbsp;module&nbsp;is&nbsp;finished.</tt></dd></dl>
+
+<dl><dt><a name="Envelope-clear"><strong>clear</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Envelope-clone"><strong>clone</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Envelope-done"><strong>done</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Envelope-get_extra"><strong>get_extra</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Envelope-length"><strong>length</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Envelope-read"><strong>read</strong></a>(self, tails<font color="#909090">=False</font>, stereo<font color="#909090">=True</font>, signal<font color="#909090">=True</font>)</dt></dl>
+
+<dl><dt><a name="Envelope-reset"><strong>reset</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Envelope-set_freq"><strong>set_freq</strong></a>(self, freq)</dt></dl>
+
+<dl><dt><a name="Envelope-step"><strong>step</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+<dl><dt><a name="Envelope-step_tails"><strong>step_tails</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Inst">class <strong>Inst</strong></a>(<a href="SynthCorona.html#SCModule">SCModule</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Module&nbsp;representing&nbsp;an&nbsp;instrument/synth.<br>
+&nbsp;<br>
+Along&nbsp;with&nbsp;core&nbsp;module&nbsp;functions,&nbsp;Insts&nbsp;also&nbsp;have&nbsp;<a href="#Inst-set_freq">set_freq</a>(),&nbsp;which<br>
+sets&nbsp;the&nbsp;current&nbsp;pitch.<br>
+&nbsp;<br>
+Insts&nbsp;also&nbsp;have&nbsp;several&nbsp;unique&nbsp;properties:<br>
+period&nbsp;--&nbsp;Indicates&nbsp;the&nbsp;length&nbsp;of&nbsp;1&nbsp;period&nbsp;of&nbsp;the&nbsp;core&nbsp;waveform.<br>
+loop&nbsp;--&nbsp;Whether&nbsp;this&nbsp;<a href="#Inst">Inst</a>&nbsp;should&nbsp;loop&nbsp;after&nbsp;its&nbsp;module&nbsp;has&nbsp;finished.<br>
+sus&nbsp;--&nbsp;Whether&nbsp;this&nbsp;<a href="#Inst">Inst</a>&nbsp;should&nbsp;sustain&nbsp;(until&nbsp;module&nbsp;completion),&nbsp;after&nbsp;<a href="#Inst-stop">stop</a>().<br>
+pan&nbsp;--&nbsp;Instrument-level&nbsp;pan&nbsp;module.<br>
+&nbsp;<br>
+Pitch&nbsp;is&nbsp;achieved&nbsp;by&nbsp;playing&nbsp;the&nbsp;module&nbsp;at&nbsp;a&nbsp;rate&nbsp;based&nbsp;on&nbsp;the&nbsp;frequency<br>
+and&nbsp;the&nbsp;wave&nbsp;period.&nbsp;This&nbsp;rate&nbsp;affects&nbsp;delta&nbsp;in&nbsp;<a href="#Inst-step">step</a>()&nbsp;calls,&nbsp;but&nbsp;it&nbsp;does<br>
+not&nbsp;affect&nbsp;const,&nbsp;(the&nbsp;constant-time&nbsp;argument).<br>
+&nbsp;<br>
+Similarly,&nbsp;<a href="#Inst">Inst</a>&nbsp;always&nbsp;uses&nbsp;const&nbsp;to&nbsp;step,&nbsp;to&nbsp;prevent&nbsp;other&nbsp;adjustments<br>
+to&nbsp;delta&nbsp;from&nbsp;affecting&nbsp;the&nbsp;pitch.&nbsp;The&nbsp;main&nbsp;exception&nbsp;to&nbsp;this&nbsp;is&nbsp;the<br>
+<a href="#Speed">Speed</a>&nbsp;module,&nbsp;which&nbsp;does&nbsp;affect&nbsp;pitch&nbsp;(by&nbsp;changing&nbsp;the&nbsp;const&nbsp;value).<br>
+&nbsp;<br>
+Because&nbsp;of&nbsp;the&nbsp;above,&nbsp;you&nbsp;can&nbsp;easily&nbsp;nest&nbsp;Insts&nbsp;within&nbsp;other&nbsp;Insts<br>
+without&nbsp;affecting&nbsp;pitch.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Inst-__init__"><strong>__init__</strong></a>(self, parent, module, prd<font color="#909090">=-1</font>, loop<font color="#909090">=True</font>, sus<font color="#909090">=False</font>, pan<font color="#909090">=None</font>)</dt><dd><tt>Initializer.<br>
+&nbsp;<br>
+Arguments:<br>
+parent&nbsp;--&nbsp;<a href="#SynthCorona">SynthCorona</a>&nbsp;parent.<br>
+module&nbsp;--&nbsp;Module&nbsp;for&nbsp;creating&nbsp;the&nbsp;<a href="#Inst">Inst</a>'s&nbsp;sound.<br>
+prd&nbsp;--&nbsp;Period&nbsp;length.&nbsp;If&nbsp;-1,&nbsp;we&nbsp;will&nbsp;use&nbsp;module.<a href="#Inst-length">length</a>(),&nbsp;which&nbsp;will<br>
+&nbsp;&nbsp;&nbsp;&nbsp;work&nbsp;as&nbsp;long&nbsp;as&nbsp;the&nbsp;module&nbsp;describes&nbsp;exactly&nbsp;1&nbsp;oscillation.<br>
+loop&nbsp;--&nbsp;Whether&nbsp;to&nbsp;loop&nbsp;our&nbsp;module.&nbsp;Default:&nbsp;True.<br>
+sus&nbsp;--&nbsp;Whether&nbsp;to&nbsp;sustain&nbsp;our&nbsp;module.&nbsp;Default:&nbsp;False.&nbsp;If&nbsp;true,&nbsp;loop&nbsp;is&nbsp;overrided&nbsp;to&nbsp;False.<br>
+pan&nbsp;--&nbsp;Instrument-level&nbsp;panning&nbsp;module.&nbsp;Defaults&nbsp;to&nbsp;centered.</tt></dd></dl>
+
+<dl><dt><a name="Inst-clear"><strong>clear</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Inst-clone"><strong>clone</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Inst-done"><strong>done</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Inst-get_extra"><strong>get_extra</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Inst-length"><strong>length</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Inst-read"><strong>read</strong></a>(self, tails<font color="#909090">=False</font>, stereo<font color="#909090">=True</font>, signal<font color="#909090">=True</font>)</dt></dl>
+
+<dl><dt><a name="Inst-reset"><strong>reset</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Inst-set_freq"><strong>set_freq</strong></a>(self, freq)</dt></dl>
+
+<dl><dt><a name="Inst-step"><strong>step</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+<dl><dt><a name="Inst-stop"><strong>stop</strong></a>(self)</dt></dl>
+
+<hr>
+Methods inherited from <a href="SynthCorona.html#SCModule">SCModule</a>:<br>
+<dl><dt><a name="Inst-step_tails"><strong>step_tails</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt><dd><tt>Steps&nbsp;any&nbsp;tails&nbsp;in&nbsp;the&nbsp;module&nbsp;forward&nbsp;in&nbsp;time.<br>
+&nbsp;<br>
+Tails&nbsp;are&nbsp;sustaining&nbsp;sounds&nbsp;in&nbsp;Instruments&nbsp;&amp;&nbsp;Sequences&nbsp;that&nbsp;have<br>
+been&nbsp;released&nbsp;but&nbsp;are&nbsp;not&nbsp;yet&nbsp;silent.<br>
+&nbsp;<br>
+Arguments:<br>
+delta&nbsp;--&nbsp;Local&nbsp;time&nbsp;slice.<br>
+const&nbsp;--&nbsp;Constant&nbsp;time&nbsp;value.</tt></dd></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Invert">class <strong>Invert</strong></a>(<a href="SynthCorona.html#SCModule">SCModule</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Module&nbsp;for&nbsp;negation.<br>
+&nbsp;<br>
+Multiplies&nbsp;all&nbsp;output&nbsp;by&nbsp;-1.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Invert-__init__"><strong>__init__</strong></a>(self, mdl)</dt><dd><tt>Initializer.<br>
+&nbsp;<br>
+Arguments:<br>
+mdl&nbsp;--&nbsp;The&nbsp;module&nbsp;to&nbsp;negate.</tt></dd></dl>
+
+<dl><dt><a name="Invert-clear"><strong>clear</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Invert-clone"><strong>clone</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Invert-done"><strong>done</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Invert-get_extra"><strong>get_extra</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Invert-length"><strong>length</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Invert-read"><strong>read</strong></a>(self, tails<font color="#909090">=False</font>, stereo<font color="#909090">=True</font>, signal<font color="#909090">=True</font>)</dt></dl>
+
+<dl><dt><a name="Invert-reset"><strong>reset</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Invert-set_freq"><strong>set_freq</strong></a>(self, freq)</dt></dl>
+
+<dl><dt><a name="Invert-step"><strong>step</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+<dl><dt><a name="Invert-step_tails"><strong>step_tails</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Level">class <strong>Level</strong></a>(<a href="SynthCorona.html#SCModule">SCModule</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Module&nbsp;for&nbsp;setting&nbsp;the&nbsp;volume&nbsp;of&nbsp;a&nbsp;module.<br>
+&nbsp;<br>
+This&nbsp;uses&nbsp;signal&nbsp;values,&nbsp;so&nbsp;9&nbsp;is&nbsp;max&nbsp;volume;&nbsp;0&nbsp;is&nbsp;silence.&nbsp;Negative<br>
+level&nbsp;values&nbsp;will&nbsp;similarly&nbsp;invert&nbsp;the&nbsp;output.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Level-__init__"><strong>__init__</strong></a>(self, mdl, env, alead<font color="#909090">=True</font>)</dt><dd><tt>Initializer.<br>
+&nbsp;<br>
+Arguments:<br>
+mdl&nbsp;--&nbsp;The&nbsp;input&nbsp;module.<br>
+env&nbsp;--&nbsp;The&nbsp;volume&nbsp;level&nbsp;module.<br>
+alead&nbsp;--&nbsp;If&nbsp;true,&nbsp;we&nbsp;stop&nbsp;when&nbsp;mdl&nbsp;stops;&nbsp;otherwise,&nbsp;when&nbsp;env&nbsp;stops.</tt></dd></dl>
+
+<dl><dt><a name="Level-clear"><strong>clear</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Level-clone"><strong>clone</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Level-done"><strong>done</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Level-get_extra"><strong>get_extra</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Level-length"><strong>length</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Level-read"><strong>read</strong></a>(self, tails<font color="#909090">=False</font>, stereo<font color="#909090">=True</font>, signal<font color="#909090">=True</font>)</dt></dl>
+
+<dl><dt><a name="Level-reset"><strong>reset</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Level-set_freq"><strong>set_freq</strong></a>(self, freq)</dt></dl>
+
+<dl><dt><a name="Level-step"><strong>step</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+<dl><dt><a name="Level-step_tails"><strong>step_tails</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="LinInterp">class <strong>LinInterp</strong></a>(<a href="SynthCorona.html#SCModule">SCModule</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Module&nbsp;for&nbsp;linear&nbsp;interpolation&nbsp;between&nbsp;two&nbsp;modules.<br>
+&nbsp;<br>
+Both&nbsp;modules&nbsp;are&nbsp;updated&nbsp;for&nbsp;the&nbsp;duration.&nbsp;Their&nbsp;outputs&nbsp;are&nbsp;blended<br>
+based&nbsp;on&nbsp;how&nbsp;far&nbsp;we&nbsp;are&nbsp;through&nbsp;the&nbsp;<a href="#LinInterp">LinInterp</a>&nbsp;width.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="LinInterp-__init__"><strong>__init__</strong></a>(self, a, b, wid<font color="#909090">=1</font>)</dt><dd><tt>Initializer.<br>
+&nbsp;<br>
+Arguments:<br>
+a&nbsp;--&nbsp;The&nbsp;start&nbsp;module.<br>
+b&nbsp;--&nbsp;The&nbsp;end&nbsp;module.<br>
+wid&nbsp;--&nbsp;Interpolation&nbsp;width&nbsp;(length).</tt></dd></dl>
+
+<dl><dt><a name="LinInterp-clear"><strong>clear</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="LinInterp-clone"><strong>clone</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="LinInterp-done"><strong>done</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="LinInterp-get_extra"><strong>get_extra</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="LinInterp-length"><strong>length</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="LinInterp-read"><strong>read</strong></a>(self, tails<font color="#909090">=False</font>, stereo<font color="#909090">=True</font>, signal<font color="#909090">=True</font>)</dt></dl>
+
+<dl><dt><a name="LinInterp-reset"><strong>reset</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="LinInterp-set_freq"><strong>set_freq</strong></a>(self, freq)</dt></dl>
+
+<dl><dt><a name="LinInterp-step"><strong>step</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+<dl><dt><a name="LinInterp-step_tails"><strong>step_tails</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Multiply">class <strong>Multiply</strong></a>(<a href="SynthCorona.html#SCModule">SCModule</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Module&nbsp;that&nbsp;multiplies&nbsp;two&nbsp;inputs&nbsp;together.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Multiply-__init__"><strong>__init__</strong></a>(self, a, b, alead<font color="#909090">=True</font>)</dt><dd><tt>Initializer.<br>
+&nbsp;<br>
+Arguments:<br>
+a&nbsp;--&nbsp;Input&nbsp;A<br>
+b&nbsp;--&nbsp;Input&nbsp;B<br>
+alead&nbsp;--&nbsp;If&nbsp;true,&nbsp;we&nbsp;stop&nbsp;when&nbsp;A&nbsp;stops;&nbsp;otherwise&nbsp;when&nbsp;B&nbsp;stops.</tt></dd></dl>
+
+<dl><dt><a name="Multiply-clear"><strong>clear</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Multiply-clone"><strong>clone</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Multiply-done"><strong>done</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Multiply-get_extra"><strong>get_extra</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Multiply-length"><strong>length</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Multiply-read"><strong>read</strong></a>(self, tails<font color="#909090">=False</font>, stereo<font color="#909090">=True</font>, signal<font color="#909090">=True</font>)</dt></dl>
+
+<dl><dt><a name="Multiply-reset"><strong>reset</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Multiply-set_freq"><strong>set_freq</strong></a>(self, freq)</dt></dl>
+
+<dl><dt><a name="Multiply-step"><strong>step</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+<dl><dt><a name="Multiply-step_tails"><strong>step_tails</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Pattern">class <strong>Pattern</strong></a>(<a href="SynthCorona.html#SCModule">SCModule</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Represents&nbsp;a&nbsp;sequence&nbsp;of&nbsp;modules,&nbsp;to&nbsp;be&nbsp;played&nbsp;one&nbsp;after&nbsp;the&nbsp;other.<br>
+&nbsp;<br>
+This&nbsp;differs&nbsp;from&nbsp;<a href="#Series">Series</a>&nbsp;in&nbsp;that&nbsp;<a href="#Pattern">Pattern</a>&nbsp;plays&nbsp;through&nbsp;each&nbsp;of&nbsp;its<br>
+modules&nbsp;before&nbsp;finishing.&nbsp;<a href="#Series">Series</a>&nbsp;plays&nbsp;through&nbsp;its&nbsp;current&nbsp;module,<br>
+finishes,&nbsp;then&nbsp;plays&nbsp;the&nbsp;next&nbsp;one&nbsp;after&nbsp;<a href="#Pattern-reset">reset</a>().<br>
+&nbsp;<br>
+Accordingly,&nbsp;the&nbsp;length&nbsp;of&nbsp;<a href="#Pattern">Pattern</a>&nbsp;is&nbsp;the&nbsp;sum&nbsp;of&nbsp;the&nbsp;lengths&nbsp;of&nbsp;its<br>
+modules.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Pattern-__init__"><strong>__init__</strong></a>(self, pat<font color="#909090">=(&lt;SynthCorona.Val instance&gt;, &lt;SynthCorona.Val instance&gt;)</font>)</dt><dd><tt>Initializer<br>
+&nbsp;<br>
+Arguments:<br>
+pat&nbsp;--&nbsp;The&nbsp;pattern,&nbsp;as&nbsp;a&nbsp;list&nbsp;of&nbsp;Modules.</tt></dd></dl>
+
+<dl><dt><a name="Pattern-clear"><strong>clear</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Pattern-clone"><strong>clone</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Pattern-done"><strong>done</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Pattern-get_extra"><strong>get_extra</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Pattern-length"><strong>length</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Pattern-read"><strong>read</strong></a>(self, tails<font color="#909090">=False</font>, stereo<font color="#909090">=True</font>, signal<font color="#909090">=True</font>)</dt></dl>
+
+<dl><dt><a name="Pattern-reset"><strong>reset</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Pattern-set_freq"><strong>set_freq</strong></a>(self, freq)</dt></dl>
+
+<dl><dt><a name="Pattern-step"><strong>step</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+<dl><dt><a name="Pattern-step_tails"><strong>step_tails</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Repeat">class <strong>Repeat</strong></a>(<a href="SynthCorona.html#SCModule">SCModule</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Module&nbsp;that&nbsp;loops&nbsp;an&nbsp;input&nbsp;a&nbsp;given&nbsp;number&nbsp;of&nbsp;times.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Repeat-__init__"><strong>__init__</strong></a>(self, mdl, x)</dt><dd><tt>Initializer.<br>
+&nbsp;<br>
+Arguments:<br>
+mdl&nbsp;--&nbsp;Input&nbsp;module.<br>
+x&nbsp;--&nbsp;The&nbsp;number&nbsp;of&nbsp;times&nbsp;to&nbsp;repeat.</tt></dd></dl>
+
+<dl><dt><a name="Repeat-clear"><strong>clear</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Repeat-clone"><strong>clone</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Repeat-done"><strong>done</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Repeat-get_extra"><strong>get_extra</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Repeat-length"><strong>length</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Repeat-read"><strong>read</strong></a>(self, tails<font color="#909090">=False</font>, stereo<font color="#909090">=True</font>, signal<font color="#909090">=True</font>)</dt></dl>
+
+<dl><dt><a name="Repeat-reset"><strong>reset</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Repeat-set_freq"><strong>set_freq</strong></a>(self, freq)</dt></dl>
+
+<dl><dt><a name="Repeat-step"><strong>step</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+<dl><dt><a name="Repeat-step_tails"><strong>step_tails</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="SCModule">class <strong>SCModule</strong></a></font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Base&nbsp;class&nbsp;for&nbsp;Modules&nbsp;in&nbsp;<a href="#SynthCorona">SynthCorona</a>.<br>
+&nbsp;<br>
+Modules&nbsp;are&nbsp;used&nbsp;to&nbsp;create&nbsp;Instruments,&nbsp;Sequences,&nbsp;and&nbsp;<a href="#Song">Song</a>&nbsp;Patterns,<br>
+as&nbsp;well&nbsp;as&nbsp;controlling&nbsp;pitch.<br>
+&nbsp;<br>
+Each&nbsp;module&nbsp;generally&nbsp;performs&nbsp;a&nbsp;single&nbsp;simple&nbsp;function,&nbsp;but&nbsp;they&nbsp;can<br>
+be&nbsp;combined&nbsp;and&nbsp;nested&nbsp;to&nbsp;create&nbsp;complex&nbsp;patterns&nbsp;and&nbsp;operations.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="SCModule-clear"><strong>clear</strong></a>(self)</dt><dd><tt>Performs&nbsp;a&nbsp;full&nbsp;clear&nbsp;on&nbsp;the&nbsp;module.<br>
+&nbsp;<br>
+This&nbsp;resets&nbsp;the&nbsp;module&nbsp;to&nbsp;its&nbsp;initial&nbsp;state.&nbsp;This&nbsp;function&nbsp;is&nbsp;a<br>
+deeper&nbsp;refresh&nbsp;than&nbsp;<a href="#SCModule-reset">reset</a>(),&nbsp;which&nbsp;is&nbsp;intended&nbsp;for&nbsp;basic&nbsp;cycling<br>
+of&nbsp;completed&nbsp;modules.</tt></dd></dl>
+
+<dl><dt><a name="SCModule-clone"><strong>clone</strong></a>(self)</dt><dd><tt>Creates&nbsp;a&nbsp;deep&nbsp;copy&nbsp;of&nbsp;the&nbsp;module&nbsp;and&nbsp;returns&nbsp;it.</tt></dd></dl>
+
+<dl><dt><a name="SCModule-done"><strong>done</strong></a>(self)</dt><dd><tt>Checks&nbsp;if&nbsp;the&nbsp;module&nbsp;is&nbsp;finished.</tt></dd></dl>
+
+<dl><dt><a name="SCModule-get_extra"><strong>get_extra</strong></a>(self)</dt><dd><tt>If&nbsp;the&nbsp;module&nbsp;is&nbsp;done,&nbsp;reports&nbsp;how&nbsp;much&nbsp;time&nbsp;we&nbsp;have&nbsp;advanced&nbsp;after<br>
+finishing.<br>
+&nbsp;<br>
+In&nbsp;another&nbsp;sense&nbsp;--&nbsp;this&nbsp;is&nbsp;how&nbsp;far&nbsp;the&nbsp;cursor&nbsp;has&nbsp;passed&nbsp;the&nbsp;end<br>
+of&nbsp;this&nbsp;module.&nbsp;Whenever&nbsp;a&nbsp;module&nbsp;finishes,&nbsp;generally&nbsp;there&nbsp;is&nbsp;some<br>
+extra&nbsp;time,&nbsp;which&nbsp;we&nbsp;will&nbsp;have&nbsp;to&nbsp;account&nbsp;for&nbsp;when&nbsp;resetting&nbsp;or<br>
+moving&nbsp;to&nbsp;a&nbsp;new&nbsp;module.<br>
+&nbsp;<br>
+(See&nbsp;<a href="#SCModule-reset">reset</a>()&nbsp;for&nbsp;an&nbsp;outline&nbsp;of&nbsp;how&nbsp;to&nbsp;process&nbsp;this&nbsp;extra&nbsp;time.)</tt></dd></dl>
+
+<dl><dt><a name="SCModule-length"><strong>length</strong></a>(self)</dt><dd><tt>Reports&nbsp;the&nbsp;module&nbsp;length.<br>
+&nbsp;<br>
+Note:&nbsp;In&nbsp;certain&nbsp;situations,&nbsp;an&nbsp;accurate&nbsp;length&nbsp;cannot&nbsp;be&nbsp;known.<br>
+(For&nbsp;example,&nbsp;a&nbsp;<a href="#Set">Set</a>&nbsp;with&nbsp;modules&nbsp;of&nbsp;different&nbsp;lengths.)</tt></dd></dl>
+
+<dl><dt><a name="SCModule-read"><strong>read</strong></a>(self, tails<font color="#909090">=False</font>, stereo<font color="#909090">=True</font>, signal<font color="#909090">=True</font>)</dt><dd><tt>Reads&nbsp;the&nbsp;module&nbsp;at&nbsp;its&nbsp;current&nbsp;position.<br>
+&nbsp;<br>
+(Occasionally,&nbsp;other&nbsp;upkeep&nbsp;steps&nbsp;are&nbsp;occur&nbsp;here&nbsp;as&nbsp;well.&nbsp;See<br>
+individual&nbsp;modules&nbsp;for&nbsp;details.)<br>
+&nbsp;<br>
+The&nbsp;tails&nbsp;argument&nbsp;determines&nbsp;whether&nbsp;we&nbsp;will&nbsp;read&nbsp;sustaining&nbsp;notes<br>
+or&nbsp;active&nbsp;instruments.&nbsp;One&nbsp;important&nbsp;thing&nbsp;to&nbsp;note&nbsp;is&nbsp;that&nbsp;certain<br>
+modules&nbsp;like&nbsp;<a href="#Val">Val</a>&nbsp;do&nbsp;not&nbsp;behave&nbsp;differently&nbsp;based&nbsp;on&nbsp;tails.&nbsp;In<br>
+certain&nbsp;cases&nbsp;this&nbsp;means&nbsp;<a href="#Val">Val</a>&nbsp;ends&nbsp;up&nbsp;getting&nbsp;read&nbsp;twice&nbsp;and&nbsp;is<br>
+doubled.&nbsp;To&nbsp;prevent&nbsp;this,&nbsp;modules&nbsp;that&nbsp;do&nbsp;not&nbsp;apply&nbsp;to&nbsp;tails&nbsp;have<br>
+a&nbsp;property&nbsp;"no_tails".&nbsp;Use&nbsp;getattr()&nbsp;to&nbsp;check&nbsp;for&nbsp;this&nbsp;field,&nbsp;and<br>
+do&nbsp;not&nbsp;perform&nbsp;a&nbsp;second&nbsp;<a href="#SCModule-read">read</a>()&nbsp;on&nbsp;it&nbsp;if&nbsp;you&nbsp;find&nbsp;it.&nbsp;(An&nbsp;example&nbsp;of<br>
+this&nbsp;process&nbsp;can&nbsp;be&nbsp;found&nbsp;in&nbsp;<a href="#Pattern">Pattern</a>.)<br>
+&nbsp;<br>
+The&nbsp;signal&nbsp;argument&nbsp;is&nbsp;not&nbsp;currently&nbsp;used.&nbsp;It&nbsp;was&nbsp;added&nbsp;for&nbsp;a&nbsp;change<br>
+that&nbsp;did&nbsp;not&nbsp;end&nbsp;up&nbsp;being&nbsp;beneficial,&nbsp;but&nbsp;I&nbsp;have&nbsp;left&nbsp;it&nbsp;in&nbsp;in&nbsp;case<br>
+it&nbsp;becomes&nbsp;useful.&nbsp;As&nbsp;a&nbsp;note,&nbsp;signals&nbsp;are&nbsp;represented&nbsp;within&nbsp;the<br>
+range&nbsp;[-9,9],&nbsp;which&nbsp;corresponds&nbsp;to&nbsp;how&nbsp;they&nbsp;are&nbsp;depicted&nbsp;in&nbsp;SC&nbsp;code.<br>
+&nbsp;<br>
+Arguments:<br>
+tails&nbsp;--&nbsp;Whether&nbsp;we&nbsp;are&nbsp;reading&nbsp;tails&nbsp;or&nbsp;active&nbsp;sounds.<br>
+stereo&nbsp;--&nbsp;Whether&nbsp;we&nbsp;are&nbsp;reading&nbsp;in&nbsp;stereo.<br>
+signal&nbsp;--&nbsp;Whether&nbsp;we&nbsp;are&nbsp;reading&nbsp;a&nbsp;signal&nbsp;value,&nbsp;or&nbsp;a&nbsp;simple&nbsp;number.</tt></dd></dl>
+
+<dl><dt><a name="SCModule-reset"><strong>reset</strong></a>(self)</dt><dd><tt>Performs&nbsp;a&nbsp;small&nbsp;reset&nbsp;on&nbsp;a&nbsp;module.<br>
+&nbsp;<br>
+This&nbsp;is&nbsp;interpreted&nbsp;as&nbsp;a&nbsp;simple&nbsp;refreshing&nbsp;of&nbsp;the&nbsp;cycle&nbsp;throughout<br>
+the&nbsp;song.&nbsp;Some&nbsp;modules&nbsp;do&nbsp;not&nbsp;entirely&nbsp;clear&nbsp;all&nbsp;of&nbsp;their&nbsp;parameters<br>
+during&nbsp;<a href="#SCModule-reset">reset</a>(),&nbsp;but&nbsp;merely&nbsp;prepare&nbsp;themselves&nbsp;to&nbsp;begin&nbsp;again.<br>
+&nbsp;<br>
+When&nbsp;a&nbsp;module&nbsp;needs&nbsp;to&nbsp;be&nbsp;full&nbsp;re-initialized,&nbsp;<a href="#SCModule-clear">clear</a>()&nbsp;is&nbsp;the<br>
+appropriate&nbsp;method&nbsp;to&nbsp;use.<br>
+&nbsp;<br>
+When&nbsp;resetting&nbsp;a&nbsp;finished&nbsp;module,&nbsp;it&nbsp;is&nbsp;often&nbsp;necessary&nbsp;to&nbsp;account<br>
+for&nbsp;the&nbsp;small&nbsp;amount&nbsp;of&nbsp;time&nbsp;that&nbsp;has&nbsp;passed&nbsp;the&nbsp;completion&nbsp;mark<br>
+(this&nbsp;avoids&nbsp;subtle&nbsp;distortions&nbsp;due&nbsp;to&nbsp;accumulating&nbsp;lost&nbsp;time).<br>
+The&nbsp;standard&nbsp;process&nbsp;for&nbsp;this&nbsp;is&nbsp;as&nbsp;follows:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;extra&nbsp;=&nbsp;mdl.<a href="#SCModule-get_extra">get_extra</a>()&nbsp;#&nbsp;Store&nbsp;the&nbsp;amount&nbsp;of&nbsp;extra&nbsp;time.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mdl.<a href="#SCModule-reset">reset</a>()&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;#&nbsp;Reset&nbsp;the&nbsp;module.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;mdl.<a href="#SCModule-step">step</a>(extra,ADJUST)&nbsp;&nbsp;#&nbsp;Adjust-step&nbsp;the&nbsp;module&nbsp;by&nbsp;extra<br>
+&nbsp;<br>
+If&nbsp;you&nbsp;are&nbsp;moving&nbsp;to&nbsp;a&nbsp;new&nbsp;module&nbsp;(i.e.,&nbsp;in&nbsp;<a href="#Pattern">Pattern</a>),&nbsp;you&nbsp;will<br>
+do&nbsp;mdlB.<a href="#SCModule-step">step</a>(extra,ADJUST),&nbsp;to&nbsp;pass&nbsp;the&nbsp;extra&nbsp;time&nbsp;on&nbsp;to&nbsp;the&nbsp;next<br>
+module.</tt></dd></dl>
+
+<dl><dt><a name="SCModule-set_freq"><strong>set_freq</strong></a>(self, freq)</dt><dd><tt>For&nbsp;Instruments,&nbsp;sets&nbsp;the&nbsp;current&nbsp;frequency.<br>
+&nbsp;<br>
+Since&nbsp;Instruments&nbsp;are&nbsp;often&nbsp;nested&nbsp;within&nbsp;other&nbsp;modules,&nbsp;this<br>
+must&nbsp;be&nbsp;a&nbsp;module&nbsp;function,&nbsp;so&nbsp;they&nbsp;can&nbsp;pass&nbsp;the&nbsp;frequency&nbsp;along<br>
+to&nbsp;any&nbsp;Insts&nbsp;they&nbsp;may&nbsp;contain.<br>
+&nbsp;<br>
+Arguments:<br>
+freq&nbsp;--&nbsp;The&nbsp;frequency&nbsp;(in&nbsp;Hz)</tt></dd></dl>
+
+<dl><dt><a name="SCModule-step"><strong>step</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt><dd><tt>Steps&nbsp;the&nbsp;module&nbsp;forward&nbsp;in&nbsp;time.<br>
+&nbsp;<br>
+Delta&nbsp;is&nbsp;the&nbsp;local&nbsp;time&nbsp;amount&nbsp;by&nbsp;which&nbsp;to&nbsp;step,&nbsp;which&nbsp;is&nbsp;used<br>
+by&nbsp;most&nbsp;modules.&nbsp;However,&nbsp;certain&nbsp;modules&nbsp;are&nbsp;designed&nbsp;to&nbsp;operate<br>
+independently&nbsp;of&nbsp;things&nbsp;like&nbsp;pitch&nbsp;require&nbsp;a&nbsp;constant&nbsp;time&nbsp;amount,<br>
+which&nbsp;is&nbsp;provided&nbsp;by&nbsp;const.<br>
+&nbsp;<br>
+Additionally,&nbsp;some&nbsp;negative&nbsp;const&nbsp;values&nbsp;are&nbsp;used&nbsp;to&nbsp;send&nbsp;modules<br>
+the&nbsp;following&nbsp;commands:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;DELTA&nbsp;(const&nbsp;=&nbsp;-1):&nbsp;Use&nbsp;the&nbsp;delta&nbsp;value&nbsp;for&nbsp;const&nbsp;value.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;STOP&nbsp;(const&nbsp;=&nbsp;-2):&nbsp;Tells&nbsp;the&nbsp;module&nbsp;to&nbsp;stop,&nbsp;or&nbsp;Insts&nbsp;to&nbsp;release.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ADJUST&nbsp;(const&nbsp;=&nbsp;-3):&nbsp;Indicates&nbsp;a&nbsp;special&nbsp;time-adjustment.&nbsp;This<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;tells&nbsp;modules&nbsp;to&nbsp;advance&nbsp;by&nbsp;delta&nbsp;exactly,&nbsp;without&nbsp;applying<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;any&nbsp;rate&nbsp;modifications.&nbsp;When&nbsp;const=ADJUST,&nbsp;we&nbsp;generally<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;assume&nbsp;that&nbsp;delta=<a href="#SCModule-get_extra">get_extra</a>()&nbsp;from&nbsp;some&nbsp;previous&nbsp;module,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;or&nbsp;from&nbsp;this&nbsp;module,&nbsp;before&nbsp;it&nbsp;was&nbsp;reset.<br>
+&nbsp;<br>
+Arguments:<br>
+delta&nbsp;--&nbsp;Local&nbsp;time&nbsp;slice.<br>
+const&nbsp;--&nbsp;Constant&nbsp;time&nbsp;value,&nbsp;or&nbsp;command&nbsp;signal.</tt></dd></dl>
+
+<dl><dt><a name="SCModule-step_tails"><strong>step_tails</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt><dd><tt>Steps&nbsp;any&nbsp;tails&nbsp;in&nbsp;the&nbsp;module&nbsp;forward&nbsp;in&nbsp;time.<br>
+&nbsp;<br>
+Tails&nbsp;are&nbsp;sustaining&nbsp;sounds&nbsp;in&nbsp;Instruments&nbsp;&amp;&nbsp;Sequences&nbsp;that&nbsp;have<br>
+been&nbsp;released&nbsp;but&nbsp;are&nbsp;not&nbsp;yet&nbsp;silent.<br>
+&nbsp;<br>
+Arguments:<br>
+delta&nbsp;--&nbsp;Local&nbsp;time&nbsp;slice.<br>
+const&nbsp;--&nbsp;Constant&nbsp;time&nbsp;value.</tt></dd></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="SCParseError">class <strong>SCParseError</strong></a>(<a href="exceptions.html#Exception">exceptions.Exception</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt><a href="exceptions.html#Exception">Exception</a>&nbsp;for&nbsp;syntax&nbsp;errors&nbsp;discovered&nbsp;while&nbsp;parsing&nbsp;a&nbsp;SC&nbsp;file.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="SynthCorona.html#SCParseError">SCParseError</a></dd>
+<dd><a href="exceptions.html#Exception">exceptions.Exception</a></dd>
+<dd><a href="exceptions.html#BaseException">exceptions.BaseException</a></dd>
+<dd><a href="__builtin__.html#object">__builtin__.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="SCParseError-__init__"><strong>__init__</strong></a>(self, msg<font color="#909090">=''</font>, line<font color="#909090">=0</font>)</dt><dd><tt>Initializer<br>
+&nbsp;<br>
+Keyword&nbsp;Arguments:<br>
+msg&nbsp;--&nbsp;Message&nbsp;describing&nbsp;the&nbsp;error.<br>
+line&nbsp;--&nbsp;The&nbsp;line&nbsp;number&nbsp;of&nbsp;where&nbsp;the&nbsp;error&nbsp;was&nbsp;tripped.</tt></dd></dl>
+
+<dl><dt><a name="SCParseError-__str__"><strong>__str__</strong></a>(self)</dt><dd><tt>Returns&nbsp;the&nbsp;error&nbsp;message&nbsp;(with&nbsp;line&nbsp;number).</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<hr>
+Data and other attributes inherited from <a href="exceptions.html#Exception">exceptions.Exception</a>:<br>
+<dl><dt><strong>__new__</strong> = &lt;built-in method __new__ of type object&gt;<dd><tt>T.<a href="#SCParseError-__new__">__new__</a>(S,&nbsp;...)&nbsp;-&gt;&nbsp;a&nbsp;new&nbsp;object&nbsp;with&nbsp;type&nbsp;S,&nbsp;a&nbsp;subtype&nbsp;of&nbsp;T</tt></dl>
+
+<hr>
+Methods inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><a name="SCParseError-__delattr__"><strong>__delattr__</strong></a>(...)</dt><dd><tt>x.<a href="#SCParseError-__delattr__">__delattr__</a>('name')&nbsp;&lt;==&gt;&nbsp;del&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="SCParseError-__getattribute__"><strong>__getattribute__</strong></a>(...)</dt><dd><tt>x.<a href="#SCParseError-__getattribute__">__getattribute__</a>('name')&nbsp;&lt;==&gt;&nbsp;x.name</tt></dd></dl>
+
+<dl><dt><a name="SCParseError-__getitem__"><strong>__getitem__</strong></a>(...)</dt><dd><tt>x.<a href="#SCParseError-__getitem__">__getitem__</a>(y)&nbsp;&lt;==&gt;&nbsp;x[y]</tt></dd></dl>
+
+<dl><dt><a name="SCParseError-__getslice__"><strong>__getslice__</strong></a>(...)</dt><dd><tt>x.<a href="#SCParseError-__getslice__">__getslice__</a>(i,&nbsp;j)&nbsp;&lt;==&gt;&nbsp;x[i:j]<br>
+&nbsp;<br>
+Use&nbsp;of&nbsp;negative&nbsp;indices&nbsp;is&nbsp;not&nbsp;supported.</tt></dd></dl>
+
+<dl><dt><a name="SCParseError-__reduce__"><strong>__reduce__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="SCParseError-__repr__"><strong>__repr__</strong></a>(...)</dt><dd><tt>x.<a href="#SCParseError-__repr__">__repr__</a>()&nbsp;&lt;==&gt;&nbsp;repr(x)</tt></dd></dl>
+
+<dl><dt><a name="SCParseError-__setattr__"><strong>__setattr__</strong></a>(...)</dt><dd><tt>x.<a href="#SCParseError-__setattr__">__setattr__</a>('name',&nbsp;value)&nbsp;&lt;==&gt;&nbsp;x.name&nbsp;=&nbsp;value</tt></dd></dl>
+
+<dl><dt><a name="SCParseError-__setstate__"><strong>__setstate__</strong></a>(...)</dt></dl>
+
+<dl><dt><a name="SCParseError-__unicode__"><strong>__unicode__</strong></a>(...)</dt></dl>
+
+<hr>
+Data descriptors inherited from <a href="exceptions.html#BaseException">exceptions.BaseException</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+</dl>
+<dl><dt><strong>args</strong></dt>
+</dl>
+<dl><dt><strong>message</strong></dt>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="SeqBlock">class <strong>SeqBlock</strong></a>(<a href="SynthCorona.html#SCModule">SCModule</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt><a href="#Sequence">Sequence</a>&nbsp;wrapper&nbsp;for&nbsp;modules.&nbsp;When&nbsp;<a href="#Sequence">Sequence</a>&nbsp;modules&nbsp;are&nbsp;parsed&nbsp;by&nbsp;the<br>
+BLK/PAT&nbsp;chunk,&nbsp;they&nbsp;will&nbsp;be&nbsp;packaged&nbsp;in&nbsp;this.<br>
+&nbsp;<br>
+Like&nbsp;basic&nbsp;Sequences,&nbsp;this&nbsp;has&nbsp;a&nbsp;<a href="#Sequence">Sequence</a>-level&nbsp;panning&nbsp;module,&nbsp;pan,<br>
+which&nbsp;defaults&nbsp;to&nbsp;centered.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="SeqBlock-__init__"><strong>__init__</strong></a>(self, module, pan<font color="#909090">=None</font>)</dt><dd><tt>Initializer.<br>
+&nbsp;<br>
+Arguments:<br>
+module&nbsp;--&nbsp;The&nbsp;module&nbsp;to&nbsp;be&nbsp;wrapped.&nbsp;Should&nbsp;contain&nbsp;<a href="#Sequence">Sequence</a>&nbsp;data.<br>
+pan&nbsp;--&nbsp;Optional&nbsp;panning&nbsp;module.&nbsp;Defaults&nbsp;to&nbsp;<a href="#Val">Val</a>(0)</tt></dd></dl>
+
+<dl><dt><a name="SeqBlock-clear"><strong>clear</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="SeqBlock-clone"><strong>clone</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="SeqBlock-done"><strong>done</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="SeqBlock-get_extra"><strong>get_extra</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="SeqBlock-length"><strong>length</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="SeqBlock-read"><strong>read</strong></a>(self, tails<font color="#909090">=False</font>, stereo<font color="#909090">=True</font>, signal<font color="#909090">=True</font>)</dt></dl>
+
+<dl><dt><a name="SeqBlock-reset"><strong>reset</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="SeqBlock-step"><strong>step</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+<dl><dt><a name="SeqBlock-step_tails"><strong>step_tails</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+<hr>
+Methods inherited from <a href="SynthCorona.html#SCModule">SCModule</a>:<br>
+<dl><dt><a name="SeqBlock-set_freq"><strong>set_freq</strong></a>(self, freq)</dt><dd><tt>For&nbsp;Instruments,&nbsp;sets&nbsp;the&nbsp;current&nbsp;frequency.<br>
+&nbsp;<br>
+Since&nbsp;Instruments&nbsp;are&nbsp;often&nbsp;nested&nbsp;within&nbsp;other&nbsp;modules,&nbsp;this<br>
+must&nbsp;be&nbsp;a&nbsp;module&nbsp;function,&nbsp;so&nbsp;they&nbsp;can&nbsp;pass&nbsp;the&nbsp;frequency&nbsp;along<br>
+to&nbsp;any&nbsp;Insts&nbsp;they&nbsp;may&nbsp;contain.<br>
+&nbsp;<br>
+Arguments:<br>
+freq&nbsp;--&nbsp;The&nbsp;frequency&nbsp;(in&nbsp;Hz)</tt></dd></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="SeqLine">class <strong>SeqLine</strong></a>(<a href="SynthCorona.html#SCModule">SCModule</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Represents&nbsp;a&nbsp;single&nbsp;line&nbsp;of&nbsp;a&nbsp;<a href="#Sequence">Sequence</a>&nbsp;module.<br>
+&nbsp;<br>
+This&nbsp;corresponds&nbsp;to&nbsp;a&nbsp;single&nbsp;line&nbsp;of&nbsp;the&nbsp;SEQ&nbsp;chunk&nbsp;of&nbsp;a&nbsp;SC&nbsp;file.<br>
+<a href="#SeqLine">SeqLine</a>&nbsp;has&nbsp;a&nbsp;single&nbsp;module&nbsp;determining&nbsp;pitch&nbsp;and&nbsp;can&nbsp;play&nbsp;only&nbsp;1<br>
+instrument&nbsp;at&nbsp;a&nbsp;time.&nbsp;This&nbsp;is&nbsp;similar&nbsp;to&nbsp;a&nbsp;monophonic&nbsp;"voice"&nbsp;within<br>
+a&nbsp;piece,&nbsp;though&nbsp;different&nbsp;Instruments&nbsp;can&nbsp;be&nbsp;used&nbsp;in&nbsp;the&nbsp;same&nbsp;<a href="#SeqLine">SeqLine</a>.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="SeqLine-__init__"><strong>__init__</strong></a>(self, parent, pitch, pat, pan<font color="#909090">=None</font>)</dt><dd><tt>Initializes&nbsp;with&nbsp;the&nbsp;given&nbsp;parent&nbsp;and&nbsp;pitch&nbsp;module&nbsp;and&nbsp;the&nbsp;given<br>
+pattern.<br>
+&nbsp;<br>
+The&nbsp;pattern&nbsp;data&nbsp;is&nbsp;extracted&nbsp;by&nbsp;<a href="#SynthCorona">SynthCorona</a>.parse()&nbsp;into&nbsp;a&nbsp;list.<br>
+Each&nbsp;index&nbsp;is&nbsp;either&nbsp;an&nbsp;Instrument&nbsp;or&nbsp;a&nbsp;string:&nbsp;"-"&nbsp;or&nbsp;"&nbsp;",<br>
+with&nbsp;hyphens&nbsp;indicating&nbsp;sustain&nbsp;&amp;&nbsp;spaces&nbsp;indicating&nbsp;release/silence.<br>
+&nbsp;<br>
+Arguments:<br>
+parent&nbsp;--&nbsp;The&nbsp;<a href="#SynthCorona">SynthCorona</a>&nbsp;module&nbsp;to&nbsp;which&nbsp;this&nbsp;part&nbsp;belongs.<br>
+pitch&nbsp;--&nbsp;Pitch&nbsp;module.<br>
+pat&nbsp;--&nbsp;<a href="#Pattern">Pattern</a>&nbsp;data&nbsp;list.<br>
+pan&nbsp;--&nbsp;Pan&nbsp;module.&nbsp;Defaults&nbsp;to&nbsp;<a href="#Val">Val</a>(0)&nbsp;(centered)&nbsp;if&nbsp;none&nbsp;is&nbsp;given.</tt></dd></dl>
+
+<dl><dt><a name="SeqLine-clear"><strong>clear</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="SeqLine-clone"><strong>clone</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="SeqLine-done"><strong>done</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="SeqLine-get_extra"><strong>get_extra</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="SeqLine-length"><strong>length</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="SeqLine-read"><strong>read</strong></a>(self, tails<font color="#909090">=False</font>, stereo<font color="#909090">=True</font>, signal<font color="#909090">=True</font>)</dt></dl>
+
+<dl><dt><a name="SeqLine-reset"><strong>reset</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="SeqLine-step"><strong>step</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+<dl><dt><a name="SeqLine-to_string"><strong>to_string</strong></a>(self)</dt><dd><tt>Compiles&nbsp;and&nbsp;returns&nbsp;a&nbsp;string&nbsp;representing&nbsp;this&nbsp;<a href="#SeqLine">SeqLine</a>.<br>
+&nbsp;<br>
+This&nbsp;was&nbsp;probably&nbsp;for&nbsp;testing&nbsp;something&nbsp;--&nbsp;it&nbsp;isn't&nbsp;pretty.</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="SynthCorona.html#SCModule">SCModule</a>:<br>
+<dl><dt><a name="SeqLine-set_freq"><strong>set_freq</strong></a>(self, freq)</dt><dd><tt>For&nbsp;Instruments,&nbsp;sets&nbsp;the&nbsp;current&nbsp;frequency.<br>
+&nbsp;<br>
+Since&nbsp;Instruments&nbsp;are&nbsp;often&nbsp;nested&nbsp;within&nbsp;other&nbsp;modules,&nbsp;this<br>
+must&nbsp;be&nbsp;a&nbsp;module&nbsp;function,&nbsp;so&nbsp;they&nbsp;can&nbsp;pass&nbsp;the&nbsp;frequency&nbsp;along<br>
+to&nbsp;any&nbsp;Insts&nbsp;they&nbsp;may&nbsp;contain.<br>
+&nbsp;<br>
+Arguments:<br>
+freq&nbsp;--&nbsp;The&nbsp;frequency&nbsp;(in&nbsp;Hz)</tt></dd></dl>
+
+<dl><dt><a name="SeqLine-step_tails"><strong>step_tails</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt><dd><tt>Steps&nbsp;any&nbsp;tails&nbsp;in&nbsp;the&nbsp;module&nbsp;forward&nbsp;in&nbsp;time.<br>
+&nbsp;<br>
+Tails&nbsp;are&nbsp;sustaining&nbsp;sounds&nbsp;in&nbsp;Instruments&nbsp;&amp;&nbsp;Sequences&nbsp;that&nbsp;have<br>
+been&nbsp;released&nbsp;but&nbsp;are&nbsp;not&nbsp;yet&nbsp;silent.<br>
+&nbsp;<br>
+Arguments:<br>
+delta&nbsp;--&nbsp;Local&nbsp;time&nbsp;slice.<br>
+const&nbsp;--&nbsp;Constant&nbsp;time&nbsp;value.</tt></dd></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Sequence">class <strong>Sequence</strong></a>(<a href="SynthCorona.html#SCModule">SCModule</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Contains&nbsp;sequence&nbsp;data&nbsp;(in&nbsp;the&nbsp;form&nbsp;of&nbsp;SeqLines)&nbsp;for&nbsp;a&nbsp;section/pattern<br>
+within&nbsp;a&nbsp;song.<br>
+&nbsp;<br>
+Sequences&nbsp;are&nbsp;Modules,&nbsp;so&nbsp;they&nbsp;can&nbsp;be&nbsp;combined/manipulated&nbsp;as&nbsp;with<br>
+any&nbsp;other&nbsp;module,&nbsp;though&nbsp;this&nbsp;must&nbsp;be&nbsp;done&nbsp;under&nbsp;the&nbsp;BLK&nbsp;(Block)&nbsp;header<br>
+of&nbsp;a&nbsp;SC&nbsp;file.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Sequence-__init__"><strong>__init__</strong></a>(self, lines, parent, pan<font color="#909090">=None</font>)</dt><dd><tt>Initializer.<br>
+&nbsp;<br>
+Arguments:<br>
+lines&nbsp;--&nbsp;The&nbsp;SeqLines&nbsp;that&nbsp;comprise&nbsp;this&nbsp;<a href="#Sequence">Sequence</a>.<br>
+parent&nbsp;--&nbsp;The&nbsp;<a href="#SynthCorona">SynthCorona</a>&nbsp;parent.<br>
+pan&nbsp;--&nbsp;Option&nbsp;panning&nbsp;module&nbsp;(pans&nbsp;the&nbsp;whole&nbsp;pattern).</tt></dd></dl>
+
+<dl><dt><a name="Sequence-clear"><strong>clear</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Sequence-clone"><strong>clone</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Sequence-done"><strong>done</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Sequence-get_extra"><strong>get_extra</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Sequence-length"><strong>length</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Sequence-read"><strong>read</strong></a>(self, tails<font color="#909090">=False</font>, stereo<font color="#909090">=True</font>, signal<font color="#909090">=True</font>)</dt></dl>
+
+<dl><dt><a name="Sequence-reset"><strong>reset</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Sequence-step"><strong>step</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+<dl><dt><a name="Sequence-step_tails"><strong>step_tails</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+<hr>
+Methods inherited from <a href="SynthCorona.html#SCModule">SCModule</a>:<br>
+<dl><dt><a name="Sequence-set_freq"><strong>set_freq</strong></a>(self, freq)</dt><dd><tt>For&nbsp;Instruments,&nbsp;sets&nbsp;the&nbsp;current&nbsp;frequency.<br>
+&nbsp;<br>
+Since&nbsp;Instruments&nbsp;are&nbsp;often&nbsp;nested&nbsp;within&nbsp;other&nbsp;modules,&nbsp;this<br>
+must&nbsp;be&nbsp;a&nbsp;module&nbsp;function,&nbsp;so&nbsp;they&nbsp;can&nbsp;pass&nbsp;the&nbsp;frequency&nbsp;along<br>
+to&nbsp;any&nbsp;Insts&nbsp;they&nbsp;may&nbsp;contain.<br>
+&nbsp;<br>
+Arguments:<br>
+freq&nbsp;--&nbsp;The&nbsp;frequency&nbsp;(in&nbsp;Hz)</tt></dd></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Series">class <strong>Series</strong></a>(<a href="SynthCorona.html#SCModule">SCModule</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Module&nbsp;for&nbsp;playing&nbsp;a&nbsp;series&nbsp;of&nbsp;modules&nbsp;as&nbsp;part&nbsp;of&nbsp;a&nbsp;longer&nbsp;pattern.<br>
+&nbsp;<br>
+<a href="#Series">Series</a>&nbsp;differs&nbsp;from&nbsp;<a href="#Pattern">Pattern</a>&nbsp;in&nbsp;that&nbsp;<a href="#Series">Series</a>&nbsp;plays&nbsp;modules&nbsp;one&nbsp;at&nbsp;a&nbsp;time--<br>
+when&nbsp;the&nbsp;current&nbsp;module&nbsp;is&nbsp;finished,&nbsp;<a href="#Series">Series</a>&nbsp;is&nbsp;<a href="#Series-done">done</a>(),&nbsp;and&nbsp;SC&nbsp;moves&nbsp;on.<br>
+Each&nbsp;time&nbsp;<a href="#Series">Series</a>&nbsp;is&nbsp;reset,&nbsp;it&nbsp;moves&nbsp;on&nbsp;to&nbsp;the&nbsp;next&nbsp;module&nbsp;in&nbsp;the<br>
+sequence.<br>
+&nbsp;<br>
+Note:&nbsp;<a href="#Series-clear">clear</a>()&nbsp;will&nbsp;fully&nbsp;reset&nbsp;<a href="#Series">Series</a>,&nbsp;setting&nbsp;the&nbsp;first&nbsp;module&nbsp;to<br>
+current.&nbsp;Also,&nbsp;different&nbsp;clones&nbsp;of&nbsp;<a href="#Series">Series</a>&nbsp;operate&nbsp;independently,&nbsp;which<br>
+means&nbsp;that&nbsp;<a href="#Series">Series</a>&nbsp;might&nbsp;not&nbsp;work&nbsp;as&nbsp;planned&nbsp;in&nbsp;some&nbsp;situations.<br>
+Generally,&nbsp;if&nbsp;you&nbsp;have&nbsp;to&nbsp;reference&nbsp;the&nbsp;module&nbsp;containing&nbsp;<a href="#Series">Series</a>&nbsp;multiple<br>
+times&nbsp;in&nbsp;the&nbsp;SC&nbsp;code,&nbsp;it&nbsp;won't&nbsp;work&nbsp;properly.&nbsp;Try&nbsp;rephrasing&nbsp;it&nbsp;to&nbsp;use<br>
+<a href="#Repeat">Repeat</a>&nbsp;instead,&nbsp;if&nbsp;possible.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Series-__init__"><strong>__init__</strong></a>(self, srs<font color="#909090">=[&lt;SynthCorona.Val instance&gt;]</font>)</dt></dl>
+
+<dl><dt><a name="Series-clear"><strong>clear</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Series-clone"><strong>clone</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Series-done"><strong>done</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Series-get_extra"><strong>get_extra</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Series-length"><strong>length</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Series-read"><strong>read</strong></a>(self, tails<font color="#909090">=False</font>, stereo<font color="#909090">=True</font>, signal<font color="#909090">=True</font>)</dt></dl>
+
+<dl><dt><a name="Series-reset"><strong>reset</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Series-set_freq"><strong>set_freq</strong></a>(self, freq)</dt></dl>
+
+<dl><dt><a name="Series-step"><strong>step</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+<dl><dt><a name="Series-step_tails"><strong>step_tails</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Set">class <strong>Set</strong></a>(<a href="SynthCorona.html#SCModule">SCModule</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Module&nbsp;for&nbsp;selecting&nbsp;random&nbsp;modules&nbsp;from&nbsp;a&nbsp;set.<br>
+&nbsp;<br>
+Each&nbsp;time&nbsp;<a href="#Set">Set</a>&nbsp;is&nbsp;reset&nbsp;(or&nbsp;initialized),&nbsp;a&nbsp;random&nbsp;module&nbsp;is&nbsp;selected,<br>
+and&nbsp;it&nbsp;will&nbsp;be&nbsp;played&nbsp;the&nbsp;next&nbsp;time&nbsp;through.<br>
+&nbsp;<br>
+Note:&nbsp;If&nbsp;the&nbsp;modules&nbsp;in&nbsp;the&nbsp;<a href="#Set">Set</a>&nbsp;have&nbsp;differing&nbsp;lengths,&nbsp;<a href="#Set">Set</a>.<a href="#Set-length">length</a>()<br>
+will&nbsp;yield&nbsp;unpredictable&nbsp;results.&nbsp;Generally,&nbsp;this&nbsp;is&nbsp;not&nbsp;a&nbsp;problem,<br>
+but&nbsp;it&nbsp;may&nbsp;cause&nbsp;some&nbsp;unexpected&nbsp;behavior&nbsp;(i.e.,&nbsp;the&nbsp;progress&nbsp;bar<br>
+might&nbsp;exceed&nbsp;100%).<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Set-__init__"><strong>__init__</strong></a>(self, set<font color="#909090">=[&lt;SynthCorona.Val instance&gt;]</font>)</dt></dl>
+
+<dl><dt><a name="Set-clear"><strong>clear</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Set-clone"><strong>clone</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Set-done"><strong>done</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Set-get_extra"><strong>get_extra</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Set-length"><strong>length</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Set-read"><strong>read</strong></a>(self, tails<font color="#909090">=False</font>, stereo<font color="#909090">=True</font>, signal<font color="#909090">=True</font>)</dt></dl>
+
+<dl><dt><a name="Set-reset"><strong>reset</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Set-set_freq"><strong>set_freq</strong></a>(self, freq)</dt></dl>
+
+<dl><dt><a name="Set-step"><strong>step</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+<dl><dt><a name="Set-step_tails"><strong>step_tails</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Song">class <strong>Song</strong></a>(<a href="SynthCorona.html#SCModule">SCModule</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Module&nbsp;class&nbsp;representing&nbsp;a&nbsp;song.<br>
+&nbsp;<br>
+This&nbsp;is&nbsp;primarily&nbsp;composed&nbsp;of&nbsp;a&nbsp;list&nbsp;of&nbsp;Sequences&nbsp;(or&nbsp;<a href="#SeqBlock">SeqBlock</a>),&nbsp;which<br>
+are&nbsp;run&nbsp;and&nbsp;read&nbsp;one&nbsp;after&nbsp;the&nbsp;other.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Song-__init__"><strong>__init__</strong></a>(self, pat, parent)</dt><dd><tt>Initializer.<br>
+&nbsp;<br>
+Arguments:<br>
+pat&nbsp;--&nbsp;<a href="#Sequence">Sequence</a>&nbsp;pattern&nbsp;that&nbsp;comprises&nbsp;the&nbsp;<a href="#Song">Song</a>.<br>
+parent&nbsp;--&nbsp;<a href="#SynthCorona">SynthCorona</a>&nbsp;that&nbsp;is&nbsp;running&nbsp;this&nbsp;show.</tt></dd></dl>
+
+<dl><dt><a name="Song-clear"><strong>clear</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Song-done"><strong>done</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Song-get_extra"><strong>get_extra</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Song-length"><strong>length</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Song-read"><strong>read</strong></a>(self, tails<font color="#909090">=False</font>, stereo<font color="#909090">=True</font>, signal<font color="#909090">=False</font>)</dt></dl>
+
+<dl><dt><a name="Song-reset"><strong>reset</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Song-step"><strong>step</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+<hr>
+Methods inherited from <a href="SynthCorona.html#SCModule">SCModule</a>:<br>
+<dl><dt><a name="Song-clone"><strong>clone</strong></a>(self)</dt><dd><tt>Creates&nbsp;a&nbsp;deep&nbsp;copy&nbsp;of&nbsp;the&nbsp;module&nbsp;and&nbsp;returns&nbsp;it.</tt></dd></dl>
+
+<dl><dt><a name="Song-set_freq"><strong>set_freq</strong></a>(self, freq)</dt><dd><tt>For&nbsp;Instruments,&nbsp;sets&nbsp;the&nbsp;current&nbsp;frequency.<br>
+&nbsp;<br>
+Since&nbsp;Instruments&nbsp;are&nbsp;often&nbsp;nested&nbsp;within&nbsp;other&nbsp;modules,&nbsp;this<br>
+must&nbsp;be&nbsp;a&nbsp;module&nbsp;function,&nbsp;so&nbsp;they&nbsp;can&nbsp;pass&nbsp;the&nbsp;frequency&nbsp;along<br>
+to&nbsp;any&nbsp;Insts&nbsp;they&nbsp;may&nbsp;contain.<br>
+&nbsp;<br>
+Arguments:<br>
+freq&nbsp;--&nbsp;The&nbsp;frequency&nbsp;(in&nbsp;Hz)</tt></dd></dl>
+
+<dl><dt><a name="Song-step_tails"><strong>step_tails</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt><dd><tt>Steps&nbsp;any&nbsp;tails&nbsp;in&nbsp;the&nbsp;module&nbsp;forward&nbsp;in&nbsp;time.<br>
+&nbsp;<br>
+Tails&nbsp;are&nbsp;sustaining&nbsp;sounds&nbsp;in&nbsp;Instruments&nbsp;&amp;&nbsp;Sequences&nbsp;that&nbsp;have<br>
+been&nbsp;released&nbsp;but&nbsp;are&nbsp;not&nbsp;yet&nbsp;silent.<br>
+&nbsp;<br>
+Arguments:<br>
+delta&nbsp;--&nbsp;Local&nbsp;time&nbsp;slice.<br>
+const&nbsp;--&nbsp;Constant&nbsp;time&nbsp;value.</tt></dd></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Speed">class <strong>Speed</strong></a>(<a href="SynthCorona.html#SCModule">SCModule</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Module&nbsp;for&nbsp;changing&nbsp;playback&nbsp;rate.<br>
+&nbsp;<br>
+This&nbsp;module&nbsp;modifies&nbsp;both&nbsp;delta&nbsp;and&nbsp;const&nbsp;in&nbsp;<a href="#Speed-step">step</a>(),&nbsp;so&nbsp;it&nbsp;DOES&nbsp;affect<br>
+pitch&nbsp;when&nbsp;applied&nbsp;to&nbsp;<a href="#Inst">Inst</a>.&nbsp;However,&nbsp;I&nbsp;have&nbsp;done&nbsp;some&nbsp;witchcraft&nbsp;so&nbsp;if<br>
+you&nbsp;apply&nbsp;<a href="#Speed">Speed</a>&nbsp;to&nbsp;a&nbsp;<a href="#Sequence">Sequence</a>&nbsp;module,&nbsp;it&nbsp;will&nbsp;not&nbsp;be&nbsp;passed&nbsp;down&nbsp;to<br>
+Insts,&nbsp;so&nbsp;pitch&nbsp;will&nbsp;not&nbsp;be&nbsp;affected.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Speed-__init__"><strong>__init__</strong></a>(self, mdl, rate<font color="#909090">=&lt;SynthCorona.Val instance&gt;</font>, alead<font color="#909090">=True</font>)</dt><dd><tt>Initializer.<br>
+&nbsp;<br>
+Arguments:<br>
+mdl&nbsp;--&nbsp;Input&nbsp;module.<br>
+rate&nbsp;--&nbsp;Playback&nbsp;rate&nbsp;module.<br>
+alead&nbsp;--&nbsp;If&nbsp;true,&nbsp;we&nbsp;stop&nbsp;when&nbsp;mdl&nbsp;stops;&nbsp;otherwise,&nbsp;when&nbsp;rate&nbsp;stops.</tt></dd></dl>
+
+<dl><dt><a name="Speed-clear"><strong>clear</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Speed-clone"><strong>clone</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Speed-done"><strong>done</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Speed-get_extra"><strong>get_extra</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Speed-length"><strong>length</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Speed-read"><strong>read</strong></a>(self, tails<font color="#909090">=False</font>, stereo<font color="#909090">=True</font>, signal<font color="#909090">=True</font>)</dt></dl>
+
+<dl><dt><a name="Speed-reset"><strong>reset</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Speed-set_freq"><strong>set_freq</strong></a>(self, freq)</dt></dl>
+
+<dl><dt><a name="Speed-step"><strong>step</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+<dl><dt><a name="Speed-step_tails"><strong>step_tails</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="StereoVal">class <strong>StereoVal</strong></a>(<a href="SynthCorona.html#SCModule">SCModule</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Module&nbsp;representing&nbsp;a&nbsp;single&nbsp;value,&nbsp;in&nbsp;stereo.<br>
+&nbsp;<br>
+Right&nbsp;now,&nbsp;the&nbsp;only&nbsp;we&nbsp;place&nbsp;we&nbsp;use&nbsp;this&nbsp;is&nbsp;when&nbsp;creating&nbsp;tails&nbsp;to&nbsp;fade<br>
+out&nbsp;instruments.&nbsp;It&nbsp;isn't&nbsp;necessary&nbsp;for&nbsp;general&nbsp;purposes,&nbsp;as&nbsp;simply<br>
+panning&nbsp;a&nbsp;<a href="#Val">Val</a>&nbsp;module&nbsp;covers&nbsp;that&nbsp;better.<br>
+&nbsp;<br>
+Like&nbsp;<a href="#Val">Val</a>,&nbsp;<a href="#StereoVal">StereoVal</a>&nbsp;has&nbsp;a&nbsp;length&nbsp;of&nbsp;1.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="StereoVal-__init__"><strong>__init__</strong></a>(self, val<font color="#909090">=[0, 0]</font>)</dt><dd><tt>Initializer.<br>
+&nbsp;<br>
+Arguments:<br>
+val&nbsp;--&nbsp;The&nbsp;value,&nbsp;as&nbsp;a&nbsp;2-tuple&nbsp;or&nbsp;2-list.</tt></dd></dl>
+
+<dl><dt><a name="StereoVal-clear"><strong>clear</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="StereoVal-clone"><strong>clone</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="StereoVal-done"><strong>done</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="StereoVal-get_extra"><strong>get_extra</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="StereoVal-length"><strong>length</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="StereoVal-read"><strong>read</strong></a>(self, tails<font color="#909090">=False</font>, stereo<font color="#909090">=True</font>, signal<font color="#909090">=True</font>)</dt><dd><tt>#&nbsp;'tails'&nbsp;here&nbsp;is&nbsp;irrelevant;&nbsp;search&nbsp;for&nbsp;"no_tails"&nbsp;property&nbsp;to&nbsp;avoid&nbsp;doubling</tt></dd></dl>
+
+<dl><dt><a name="StereoVal-reset"><strong>reset</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="StereoVal-set_freq"><strong>set_freq</strong></a>(self, freq)</dt></dl>
+
+<dl><dt><a name="StereoVal-step"><strong>step</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+<dl><dt><a name="StereoVal-step_tails"><strong>step_tails</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Subtract">class <strong>Subtract</strong></a>(<a href="SynthCorona.html#SCModule">SCModule</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Module&nbsp;that&nbsp;subtracts&nbsp;two&nbsp;inputs.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Subtract-__init__"><strong>__init__</strong></a>(self, a, b, alead<font color="#909090">=True</font>)</dt><dd><tt>Initializer.<br>
+&nbsp;<br>
+Arguments:<br>
+a&nbsp;--&nbsp;Input&nbsp;A.<br>
+b&nbsp;--&nbsp;Input&nbsp;B.<br>
+alead&nbsp;--&nbsp;If&nbsp;true,&nbsp;we&nbsp;stop&nbsp;when&nbsp;A&nbsp;stops;&nbsp;otherwise,&nbsp;when&nbsp;B&nbsp;stops.</tt></dd></dl>
+
+<dl><dt><a name="Subtract-clear"><strong>clear</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Subtract-clone"><strong>clone</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Subtract-done"><strong>done</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Subtract-get_extra"><strong>get_extra</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Subtract-length"><strong>length</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Subtract-read"><strong>read</strong></a>(self, tails<font color="#909090">=False</font>, stereo<font color="#909090">=True</font>, signal<font color="#909090">=True</font>)</dt></dl>
+
+<dl><dt><a name="Subtract-reset"><strong>reset</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Subtract-set_freq"><strong>set_freq</strong></a>(self, freq)</dt></dl>
+
+<dl><dt><a name="Subtract-step"><strong>step</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+<dl><dt><a name="Subtract-step_tails"><strong>step_tails</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="SynthCorona">class <strong>SynthCorona</strong></a></font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Core&nbsp;<a href="#SynthCorona">SynthCorona</a>&nbsp;class.<br>
+&nbsp;<br>
+Handles&nbsp;parsing&nbsp;an&nbsp;SC&nbsp;file&nbsp;into&nbsp;a&nbsp;modules&nbsp;and&nbsp;song&nbsp;data,&nbsp;as&nbsp;well&nbsp;as<br>
+rendering&nbsp;that&nbsp;data&nbsp;into&nbsp;a&nbsp;Wave&nbsp;audio&nbsp;file.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="SynthCorona-__init__"><strong>__init__</strong></a>(self)</dt><dd><tt>Empty&nbsp;initializer.<br>
+&nbsp;<br>
+Once&nbsp;initialized,&nbsp;call&nbsp;<a href="#SynthCorona-parse">parse</a>()&nbsp;to&nbsp;load&nbsp;song&nbsp;data&nbsp;and&nbsp;populate.</tt></dd></dl>
+
+<dl><dt><a name="SynthCorona-buildFreqs"><strong>buildFreqs</strong></a>(self)</dt><dd><tt>Builds&nbsp;a&nbsp;list&nbsp;of&nbsp;pre-baked&nbsp;frequencies&nbsp;for&nbsp;each&nbsp;cent&nbsp;in&nbsp;the&nbsp;10&nbsp;octaves<br>
+of&nbsp;the&nbsp;tones&nbsp;array.&nbsp;When&nbsp;pitches&nbsp;are&nbsp;read&nbsp;in&nbsp;SC,&nbsp;we&nbsp;will&nbsp;access&nbsp;the<br>
+corresponding&nbsp;index&nbsp;of&nbsp;this&nbsp;array,&nbsp;rather&nbsp;than&nbsp;calculating&nbsp;on&nbsp;the&nbsp;fly.</tt></dd></dl>
+
+<dl><dt><a name="SynthCorona-buildTones"><strong>buildTones</strong></a>(self)</dt><dd><tt>Builds&nbsp;the&nbsp;tones&nbsp;dictionary,&nbsp;which&nbsp;maps&nbsp;note/oct&nbsp;codes&nbsp;to&nbsp;their<br>
+value&nbsp;in&nbsp;cents.&nbsp;This&nbsp;corresponds&nbsp;directly&nbsp;to&nbsp;how&nbsp;notes&nbsp;are<br>
+depicted&nbsp;in&nbsp;SC&nbsp;--&nbsp;i.e.&nbsp;"C4",&nbsp;"a2",&nbsp;"D#6",&nbsp;"F&nbsp;3",&nbsp;etc.<br>
+&nbsp;<br>
+Generates&nbsp;10&nbsp;octaves&nbsp;(0-9).</tt></dd></dl>
+
+<dl><dt><a name="SynthCorona-extractPattern"><strong>extractPattern</strong></a>(self, stng, line<font color="#909090">=0</font>)</dt><dd><tt>Separates&nbsp;out&nbsp;a&nbsp;<a href="#Pattern">Pattern</a>&nbsp;description&nbsp;from&nbsp;a&nbsp;larger&nbsp;description<br>
+string,&nbsp;and&nbsp;trims&nbsp;away&nbsp;the&nbsp;brackets.<br>
+&nbsp;<br>
+Arguments:<br>
+stng&nbsp;--&nbsp;A&nbsp;module&nbsp;description.<br>
+line&nbsp;--&nbsp;Current&nbsp;parser&nbsp;line,&nbsp;for&nbsp;error&nbsp;reporting.<br>
+&nbsp;<br>
+Returns&nbsp;a&nbsp;2-tuple:&nbsp;(pattern&nbsp;description,&nbsp;remaining&nbsp;string)</tt></dd></dl>
+
+<dl><dt><a name="SynthCorona-extractSeries"><strong>extractSeries</strong></a>(self, stng, line<font color="#909090">=0</font>)</dt><dd><tt>Separates&nbsp;out&nbsp;a&nbsp;<a href="#Series">Series</a>&nbsp;description&nbsp;from&nbsp;a&nbsp;larger&nbsp;description<br>
+string,&nbsp;and&nbsp;trims&nbsp;away&nbsp;the&nbsp;brackets.<br>
+&nbsp;<br>
+Arguments:<br>
+stng&nbsp;--&nbsp;A&nbsp;module&nbsp;description.<br>
+line&nbsp;--&nbsp;Current&nbsp;parser&nbsp;line,&nbsp;for&nbsp;error&nbsp;reporting.<br>
+&nbsp;<br>
+Returns&nbsp;a&nbsp;2-tuple:&nbsp;(series&nbsp;description,&nbsp;remaining&nbsp;string)</tt></dd></dl>
+
+<dl><dt><a name="SynthCorona-extractSet"><strong>extractSet</strong></a>(self, stng, line<font color="#909090">=0</font>)</dt><dd><tt>Separates&nbsp;out&nbsp;a&nbsp;<a href="#Set">Set</a>&nbsp;description&nbsp;from&nbsp;a&nbsp;larger&nbsp;description<br>
+string,&nbsp;and&nbsp;trims&nbsp;away&nbsp;the&nbsp;brackets.<br>
+&nbsp;<br>
+Arguments:<br>
+stng&nbsp;--&nbsp;A&nbsp;module&nbsp;description.<br>
+line&nbsp;--&nbsp;Current&nbsp;parser&nbsp;line,&nbsp;for&nbsp;error&nbsp;reporting.<br>
+&nbsp;<br>
+Returns&nbsp;a&nbsp;2-tuple:&nbsp;(set&nbsp;description,&nbsp;remaining&nbsp;string)</tt></dd></dl>
+
+<dl><dt><a name="SynthCorona-parse"><strong>parse</strong></a>(self, filename)</dt><dd><tt>Parses&nbsp;the&nbsp;SC&nbsp;file&nbsp;at&nbsp;filename&nbsp;and&nbsp;loads&nbsp;its&nbsp;information&nbsp;into&nbsp;this<br>
+instance&nbsp;of&nbsp;<a href="#SynthCorona">SynthCorona</a>.<br>
+&nbsp;<br>
+Arguments:<br>
+filename&nbsp;--&nbsp;The&nbsp;path&nbsp;of&nbsp;the&nbsp;file&nbsp;to&nbsp;parse.<br>
+&nbsp;<br>
+Throws&nbsp;<a href="#SCParseError">SCParseError</a>&nbsp;if&nbsp;any&nbsp;SC&nbsp;syntax&nbsp;errors&nbsp;are&nbsp;found&nbsp;while&nbsp;parsing.</tt></dd></dl>
+
+<dl><dt><a name="SynthCorona-parseMeta"><strong>parseMeta</strong></a>(self, stng)</dt><dd><tt>Separates&nbsp;out&nbsp;individual&nbsp;meta&nbsp;tags&nbsp;from&nbsp;a&nbsp;meta&nbsp;description.<br>
+&nbsp;<br>
+Tags&nbsp;must&nbsp;be&nbsp;delimited&nbsp;by&nbsp;commas.<br>
+&nbsp;<br>
+Arguments:<br>
+stng&nbsp;--&nbsp;The&nbsp;meta&nbsp;description.&nbsp;This&nbsp;can&nbsp;include&nbsp;brackets,&nbsp;or&nbsp;not.</tt></dd></dl>
+
+<dl><dt><a name="SynthCorona-parseModule"><strong>parseModule</strong></a>(self, stng, type, line<font color="#909090">=0</font>)</dt><dd><tt>Parses&nbsp;a&nbsp;<a href="#SynthCorona">SynthCorona</a>&nbsp;module&nbsp;from&nbsp;a&nbsp;string.<br>
+&nbsp;<br>
+This&nbsp;is&nbsp;the&nbsp;method&nbsp;to&nbsp;use&nbsp;if&nbsp;you&nbsp;have&nbsp;a&nbsp;full&nbsp;description&nbsp;string&nbsp;to<br>
+parse.&nbsp;This&nbsp;uses&nbsp;popModule&nbsp;to&nbsp;isolate&nbsp;operands&nbsp;in&nbsp;binary&nbsp;operations<br>
+&amp;&nbsp;then&nbsp;wraps&nbsp;them&nbsp;in&nbsp;operator&nbsp;modules&nbsp;as&nbsp;necessary.<br>
+&nbsp;<br>
+In&nbsp;this&nbsp;method,&nbsp;binary&nbsp;operators&nbsp;are&nbsp;parsed&nbsp;left-to-right,&nbsp;which&nbsp;is&nbsp;in<br>
+turn&nbsp;the&nbsp;only&nbsp;order&nbsp;of&nbsp;operations&nbsp;in&nbsp;Synth-Corona.<br>
+So&nbsp;A+B*C&nbsp;=&nbsp;(A+B)*C&nbsp;!=&nbsp;A+(B*C)<br>
+&nbsp;<br>
+Use&nbsp;any&nbsp;grouping&nbsp;module&nbsp;(<a href="#Pattern">Pattern</a>,&nbsp;<a href="#Set">Set</a>,&nbsp;<a href="#Series">Series</a>)&nbsp;to&nbsp;change&nbsp;the&nbsp;order&nbsp;of<br>
+operations&nbsp;if&nbsp;necessary.<br>
+&nbsp;<br>
+Previously&nbsp;created&nbsp;modules/Insts/Sequences&nbsp;can&nbsp;be&nbsp;referenced&nbsp;by<br>
+name.&nbsp;They&nbsp;will&nbsp;be&nbsp;copied&nbsp;into&nbsp;the&nbsp;new&nbsp;module&nbsp;via&nbsp;clone().<br>
+&nbsp;<br>
+Arguments:<br>
+stng&nbsp;--&nbsp;String&nbsp;containing&nbsp;the&nbsp;module&nbsp;description.<br>
+type&nbsp;--&nbsp;Tells&nbsp;us&nbsp;what&nbsp;the&nbsp;module&nbsp;is&nbsp;for.&nbsp;Options:&nbsp;INST,&nbsp;TONE,&nbsp;SEQN,&nbsp;MDLE<br>
+line&nbsp;--&nbsp;Current&nbsp;parser&nbsp;line;&nbsp;for&nbsp;error&nbsp;reporting.<br>
+&nbsp;<br>
+Returns&nbsp;the&nbsp;<a href="#SynthCorona">SynthCorona</a>&nbsp;module.</tt></dd></dl>
+
+<dl><dt><a name="SynthCorona-parsePattern"><strong>parsePattern</strong></a>(self, stng, type, line<font color="#909090">=0</font>)</dt><dd><tt>Parse&nbsp;a&nbsp;<a href="#Pattern">Pattern</a>&nbsp;module.<br>
+&nbsp;<br>
+This&nbsp;uses&nbsp;<a href="#SynthCorona-parseModule">parseModule</a>()&nbsp;for&nbsp;each&nbsp;module,&nbsp;then&nbsp;wraps&nbsp;the&nbsp;list&nbsp;with<br>
+a&nbsp;<a href="#Pattern">Pattern</a>&nbsp;module.<br>
+&nbsp;<br>
+Arguments:<br>
+stng&nbsp;--&nbsp;<a href="#Pattern">Pattern</a>&nbsp;description&nbsp;string&nbsp;(bounding&nbsp;brackets&nbsp;removed)<br>
+type&nbsp;--&nbsp;The&nbsp;type&nbsp;of&nbsp;module&nbsp;we're&nbsp;parsing.&nbsp;Options:&nbsp;INST,&nbsp;TONE,&nbsp;SEQN,&nbsp;MDLE.<br>
+line&nbsp;--&nbsp;Current&nbsp;parser&nbsp;line,&nbsp;for&nbsp;error-reporting.</tt></dd></dl>
+
+<dl><dt><a name="SynthCorona-parseSeries"><strong>parseSeries</strong></a>(self, stng, type, line<font color="#909090">=0</font>)</dt><dd><tt>Parse&nbsp;a&nbsp;<a href="#Series">Series</a>&nbsp;module.<br>
+&nbsp;<br>
+This&nbsp;uses&nbsp;<a href="#SynthCorona-parseModule">parseModule</a>()&nbsp;for&nbsp;each&nbsp;module,&nbsp;then&nbsp;wraps&nbsp;the&nbsp;list&nbsp;with<br>
+a&nbsp;<a href="#Series">Series</a>&nbsp;module.<br>
+&nbsp;<br>
+Arguments:<br>
+stng&nbsp;--&nbsp;<a href="#Series">Series</a>&nbsp;description&nbsp;string&nbsp;(bounding&nbsp;brackets&nbsp;removed)<br>
+type&nbsp;--&nbsp;The&nbsp;type&nbsp;of&nbsp;module&nbsp;we're&nbsp;parsing.&nbsp;Options:&nbsp;INST,&nbsp;TONE,&nbsp;SEQN,&nbsp;MDLE.<br>
+line&nbsp;--&nbsp;Current&nbsp;parser&nbsp;line,&nbsp;for&nbsp;error-reporting.</tt></dd></dl>
+
+<dl><dt><a name="SynthCorona-parseSet"><strong>parseSet</strong></a>(self, stng, type, line<font color="#909090">=0</font>)</dt><dd><tt>Parse&nbsp;a&nbsp;<a href="#Set">Set</a>&nbsp;module.<br>
+&nbsp;<br>
+This&nbsp;uses&nbsp;<a href="#SynthCorona-parseModule">parseModule</a>()&nbsp;for&nbsp;each&nbsp;module,&nbsp;then&nbsp;wraps&nbsp;the&nbsp;list&nbsp;with<br>
+a&nbsp;<a href="#Set">Set</a>&nbsp;module.<br>
+&nbsp;<br>
+Arguments:<br>
+stng&nbsp;--&nbsp;<a href="#Set">Set</a>&nbsp;description&nbsp;string&nbsp;(bounding&nbsp;brackets&nbsp;removed)<br>
+type&nbsp;--&nbsp;The&nbsp;type&nbsp;of&nbsp;module&nbsp;we're&nbsp;parsing.&nbsp;Options:&nbsp;INST,&nbsp;TONE,&nbsp;SEQN,&nbsp;MDLE.<br>
+line&nbsp;--&nbsp;Current&nbsp;parser&nbsp;line,&nbsp;for&nbsp;error-reporting.</tt></dd></dl>
+
+<dl><dt><a name="SynthCorona-parseSongLine"><strong>parseSongLine</strong></a>(self, stng, mdls, line<font color="#909090">=0</font>)</dt><dd><tt>Parses&nbsp;a&nbsp;list&nbsp;of&nbsp;<a href="#Sequence">Sequence</a>&nbsp;modules,&nbsp;to&nbsp;be&nbsp;added&nbsp;to&nbsp;the&nbsp;<a href="#Song">Song</a>.<br>
+&nbsp;<br>
+This&nbsp;is&nbsp;called&nbsp;for&nbsp;each&nbsp;non-empty&nbsp;line&nbsp;of&nbsp;the&nbsp;SNG&nbsp;chunk,&nbsp;and&nbsp;newly<br>
+parsed&nbsp;Sequences&nbsp;are&nbsp;added&nbsp;to&nbsp;mdls.<br>
+&nbsp;<br>
+Arguments:<br>
+stng&nbsp;--&nbsp;String&nbsp;representing&nbsp;the&nbsp;line&nbsp;of&nbsp;Sequences.<br>
+mdls&nbsp;--&nbsp;List&nbsp;of&nbsp;<a href="#Song">Song</a>&nbsp;modules.&nbsp;We&nbsp;append&nbsp;new&nbsp;Sequences&nbsp;to&nbsp;this.<br>
+line&nbsp;--&nbsp;Current&nbsp;parser&nbsp;line,&nbsp;for&nbsp;error&nbsp;reporting.</tt></dd></dl>
+
+<dl><dt><a name="SynthCorona-popModule"><strong>popModule</strong></a>(self, stng, type, line<font color="#909090">=0</font>)</dt><dd><tt>'Pops'&nbsp;the&nbsp;first&nbsp;fully-described&nbsp;module&nbsp;off&nbsp;the&nbsp;front&nbsp;of&nbsp;the&nbsp;given<br>
+string&nbsp;and&nbsp;parses&nbsp;it.<br>
+&nbsp;<br>
+This&nbsp;method&nbsp;handles&nbsp;parsing&nbsp;of&nbsp;all&nbsp;modules&nbsp;except&nbsp;binary&nbsp;operators,<br>
+which&nbsp;are&nbsp;handled&nbsp;by&nbsp;<a href="#SynthCorona-parseModule">parseModule</a>().&nbsp;Given&nbsp;a&nbsp;string&nbsp;describing&nbsp;a<br>
+binary&nbsp;operation,&nbsp;this&nbsp;method&nbsp;will&nbsp;parse&nbsp;the&nbsp;first&nbsp;operand.<br>
+&nbsp;<br>
+This&nbsp;method&nbsp;is&nbsp;called&nbsp;by&nbsp;<a href="#SynthCorona-parseModule">parseModule</a>()&nbsp;&amp;&nbsp;is&nbsp;mostly&nbsp;intended&nbsp;to&nbsp;reduce<br>
+code&nbsp;repetition&nbsp;within&nbsp;that&nbsp;method.<br>
+&nbsp;<br>
+Keyword&nbsp;arguments:<br>
+stng&nbsp;--&nbsp;String&nbsp;containing&nbsp;the&nbsp;full&nbsp;module&nbsp;description.<br>
+type&nbsp;--&nbsp;Tells&nbsp;us&nbsp;what&nbsp;this&nbsp;module&nbsp;is&nbsp;for.&nbsp;Options:&nbsp;INST,&nbsp;TONE,&nbsp;SEQN,&nbsp;MDLE.<br>
+line&nbsp;--&nbsp;Current&nbsp;parser&nbsp;line;&nbsp;for&nbsp;error&nbsp;reporting.<br>
+&nbsp;<br>
+Returns&nbsp;a&nbsp;2-tuple:&nbsp;(parsed&nbsp;first&nbsp;module,&nbsp;remaining&nbsp;string).</tt></dd></dl>
+
+<dl><dt><a name="SynthCorona-render"><strong>render</strong></a>(self, filename)</dt><dd><tt>Renders&nbsp;the&nbsp;<a href="#Song">Song</a>&nbsp;into&nbsp;a&nbsp;Wave&nbsp;file.<br>
+&nbsp;<br>
+Arguments:<br>
+filename&nbsp;--&nbsp;The&nbsp;path&nbsp;of&nbsp;the&nbsp;output&nbsp;file.</tt></dd></dl>
+
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Val">class <strong>Val</strong></a>(<a href="SynthCorona.html#SCModule">SCModule</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Module&nbsp;representing&nbsp;a&nbsp;single&nbsp;fixed&nbsp;value.<br>
+&nbsp;<br>
+This&nbsp;module&nbsp;has&nbsp;length&nbsp;1&nbsp;and&nbsp;always&nbsp;returns&nbsp;its&nbsp;value&nbsp;on&nbsp;<a href="#Val-read">read</a>().<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Val-__init__"><strong>__init__</strong></a>(self, val<font color="#909090">=0</font>)</dt></dl>
+
+<dl><dt><a name="Val-clear"><strong>clear</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Val-clone"><strong>clone</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Val-done"><strong>done</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Val-get_extra"><strong>get_extra</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Val-length"><strong>length</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Val-read"><strong>read</strong></a>(self, tails<font color="#909090">=False</font>, stereo<font color="#909090">=True</font>, signal<font color="#909090">=True</font>)</dt><dd><tt>#&nbsp;'tails'&nbsp;here&nbsp;is&nbsp;irrelevant;&nbsp;search&nbsp;for&nbsp;"no_tails"&nbsp;property&nbsp;to&nbsp;avoid&nbsp;doubling</tt></dd></dl>
+
+<dl><dt><a name="Val-reset"><strong>reset</strong></a>(self)</dt></dl>
+
+<dl><dt><a name="Val-set_freq"><strong>set_freq</strong></a>(self, freq)</dt></dl>
+
+<dl><dt><a name="Val-step"><strong>step</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+<dl><dt><a name="Val-step_tails"><strong>step_tails</strong></a>(self, delta, const<font color="#909090">=-1</font>)</dt></dl>
+
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-as_decimal"><strong>as_decimal</strong></a>(val)</dt><dd><tt>Converts&nbsp;SC&nbsp;signal&nbsp;values&nbsp;into&nbsp;decimals.<br>
+&nbsp;<br>
+Signal&nbsp;values&nbsp;range&nbsp;from&nbsp;-9&nbsp;to&nbsp;9,&nbsp;so&nbsp;this&nbsp;simply&nbsp;returns&nbsp;the&nbsp;input<br>
+divided&nbsp;by&nbsp;9.<br>
+&nbsp;<br>
+Arguments:<br>
+val&nbsp;--&nbsp;The&nbsp;value&nbsp;to&nbsp;convert&nbsp;to&nbsp;decimal.</tt></dd></dl>
+ <dl><dt><a name="-calc_freq"><strong>calc_freq</strong></a>(disp)</dt><dd><tt>Calculates&nbsp;the&nbsp;frequency&nbsp;of&nbsp;a&nbsp;given&nbsp;pitch.<br>
+&nbsp;<br>
+This&nbsp;calculation&nbsp;is&nbsp;performed&nbsp;in&nbsp;cents,&nbsp;and&nbsp;uses&nbsp;A4&nbsp;for&nbsp;reference.&nbsp;As<br>
+such,&nbsp;input&nbsp;must&nbsp;be&nbsp;expressed&nbsp;in&nbsp;terms&nbsp;of&nbsp;distance&nbsp;to&nbsp;A4--so:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0&nbsp;=&nbsp;A4<br>
+&nbsp;&nbsp;&nbsp;&nbsp;300&nbsp;=&nbsp;C5<br>
+&nbsp;&nbsp;&nbsp;&nbsp;-1200&nbsp;=&nbsp;A3<br>
+&nbsp;&nbsp;&nbsp;&nbsp;etc.<br>
+&nbsp;<br>
+Currently,&nbsp;we&nbsp;pre-bake&nbsp;all&nbsp;frequencies&nbsp;when&nbsp;<a href="#SynthCorona">SynthCorona</a>&nbsp;starts&nbsp;up,&nbsp;so<br>
+this&nbsp;is&nbsp;only&nbsp;used&nbsp;initially--afterward,&nbsp;we&nbsp;pull&nbsp;frequencies&nbsp;from&nbsp;a&nbsp;list.<br>
+&nbsp;<br>
+Arguments:<br>
+disp&nbsp;--&nbsp;The&nbsp;pitch,&nbsp;expressed&nbsp;as&nbsp;"cents&nbsp;from&nbsp;A4".</tt></dd></dl>
+ <dl><dt><a name="-gcd"><strong>gcd</strong></a>(a, b)</dt><dd><tt>Calculates&nbsp;greatest&nbsp;common&nbsp;denominator.<br>
+&nbsp;<br>
+Arguments:<br>
+a&nbsp;--&nbsp;Input&nbsp;A.<br>
+b&nbsp;--&nbsp;Inpubt&nbsp;B.</tt></dd></dl>
+ <dl><dt><a name="-lcm"><strong>lcm</strong></a>(a, b)</dt><dd><tt>Calculates&nbsp;least&nbsp;common&nbsp;multiple.<br>
+&nbsp;<br>
+Arguments:<br>
+a&nbsp;--&nbsp;Input&nbsp;A.<br>
+b&nbsp;--&nbsp;Input&nbsp;B.</tt></dd></dl>
+ <dl><dt><a name="-limit"><strong>limit</strong></a>(val)</dt><dd><tt>Hard&nbsp;limits&nbsp;the&nbsp;given&nbsp;signal&nbsp;value.<br>
+&nbsp;<br>
+This&nbsp;limits&nbsp;to&nbsp;+/-0.9999&nbsp;*&nbsp;MAX.<br>
+&nbsp;<br>
+Arguments:<br>
+val&nbsp;--&nbsp;The&nbsp;signal&nbsp;value&nbsp;to&nbsp;limit.</tt></dd></dl>
+ <dl><dt><a name="-pan"><strong>pan</strong></a>(vals, pan)</dt><dd><tt>Calculates&nbsp;panning.<br>
+&nbsp;<br>
+Pan&nbsp;amounts&nbsp;range&nbsp;from&nbsp;-9&nbsp;(100%&nbsp;L)&nbsp;to&nbsp;9&nbsp;(100%&nbsp;R).&nbsp;Excessive&nbsp;values<br>
+will&nbsp;be&nbsp;clipped.<br>
+&nbsp;<br>
+Arguments:<br>
+vals&nbsp;--&nbsp;The&nbsp;stereo&nbsp;pair&nbsp;of&nbsp;signal&nbsp;values.<br>
+pan&nbsp;--&nbsp;The&nbsp;panning&nbsp;adjustment.</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>ADJUST</strong> = -3<br>
+<strong>CHUNK</strong> = 1028<br>
+<strong>DELTA</strong> = -1<br>
+<strong>HEADERS</strong> = set(['BLK', 'CFG', 'IMP', 'INS', 'MDL', 'PAT', ...])<br>
+<strong>INST</strong> = 0<br>
+<strong>INS_REL_TIME</strong> = 6<br>
+<strong>MAX_VAL</strong> = 9<br>
+<strong>MDLE</strong> = 3<br>
+<strong>OPERATORS</strong> = '+-=*/rixlvs'<br>
+<strong>RESERVED</strong> = '+-*/rixlvcs{}[]()&lt;&gt;.,|'<br>
+<strong>SEQN</strong> = 2<br>
+<strong>STOP</strong> = -2<br>
+<strong>TONE</strong> = 1</td></tr></table>
+</body></html>
