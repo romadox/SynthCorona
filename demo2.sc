@@ -144,4 +144,10 @@ D6: |    C   C C |C   C C     |
 
 
 // Now we arrange it all together!
+// First we have the pickup note, A.
+// "[]" indicates a Pattern, which plays items one after the other.
+// "()" indicates a Series, which alternates through items individually.
+// "r" is the repeat operator, which replays a module a given number of times.
+// So the phrase "[B,(C,D)]" is equivalent to "B,C,B,D".
+// All in all, this is the same as: "A, B,C,B,D, E,F,E,G".
 SNG A,[B,(C,D)]r2,[E,(F,G)]r2
