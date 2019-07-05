@@ -242,7 +242,7 @@ class SynthCorona:
         self.beat = 4
         self.rate = 44100
         self.depth = 16
-        self.normalize = False
+        self.normalize = True
         self.freq = 440
         self.framesperstep = (60*self.rate)/(self.tempo*self.beat)
         self.frameslice = 1/self.framesperstep
@@ -3233,7 +3233,7 @@ class Cross(SCModule):
                 self.op.a.step(extra,ADJUST)
                 self.bstep = 1/self.op.a.length()
                 self.len = self.op.a.length()*self.op.b.length()
-                self.acount += 1
+                self.acount = 1
         else:
             extra = -self.acount * self.op.a.length()
             self.op.b.step(delta*self.bstep,const)
