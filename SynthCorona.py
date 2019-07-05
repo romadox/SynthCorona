@@ -2733,7 +2733,10 @@ class Speed(SCModule):
 
     def length(self):
         if(self.a_lead):
-            return self.mdl.length()/self.rate.read(stereo=False,signal=False)
+            rt = self.rate.read(stereo=False,signal=False)
+            if(rt == 0):
+                rt = 0.0000000001
+            return self.mdl.length()/rt
         else:
             return self.rate.length()
 
@@ -3210,23 +3213,36 @@ class Cross(SCModule):
             raise SCParseError("Invalid Operator for Cross module.",line)
             #print("Error: Invalid Cross Operation (\"x\")")
             self.op = mdl
+
+        self.acount = 1
         self.bstep = -1
         self.cur = 0
         self.len = -1
 
     def step(self, delta, const=-1):
         if(self.bstep < 0):
-            self.bstep = 1/self.op.a.length()
+            self.bstep = 1/(self.op.a.length())
             self.len = self.op.a.length() * self.op.b.length()
         self.op.a.step(delta,const)
-        self.op.b.step(delta*self.bstep,const)
-        self.cur += delta
-        if(self.op.a.done() and not self.done()):
-            extra = self.op.a.get_extra()
+        self.acount -= delta*self.bstep
+        if(self.op.a.done() or self.acount > 0):
+            self.op.b.step(delta*self.bstep,const)
+            if(self.op.a.done() and not self.done()):
+                extra = self.op.a.get_extra()
+                self.op.a.reset()
+                self.op.a.step(extra,ADJUST)
+                self.bstep = 1/self.op.a.length()
+                self.len = self.op.a.length()*self.op.b.length()
+                self.acount += 1
+        else:
+            extra = -self.acount * self.op.a.length()
+            self.op.b.step(delta*self.bstep,const)
             self.op.a.reset()
             self.op.a.step(extra,ADJUST)
             self.bstep = 1/self.op.a.length()
-            self.len = self.op.a.length()*self.op.b.length()
+            self.len = self.op.a.length() * self.op.b.length()
+            self.acount += 1
+        self.cur += delta
 
     def read(self,tails=False,stereo=True,signal=True):
         return self.op.read(tails,stereo,signal)
@@ -3238,7 +3254,7 @@ class Cross(SCModule):
     def reset(self):
         self.op.reset()
         self.cur = 0
-        self.bstep = 1/self.op.a.length()
+        self.bstep = 1/(self.op.a.length())
         self.len = self.op.a.length()*self.op.b.length()
 
     def clear(self):
