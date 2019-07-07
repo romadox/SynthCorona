@@ -3211,13 +3211,11 @@ class Cross(SCModule):
             self.op = mdl
         else:
             raise SCParseError("Invalid Operator for Cross module.",line)
-            #print("Error: Invalid Cross Operation (\"x\")")
             self.op = mdl
-
         self.acount = 1
         self.bstep = -1
         self.cur = 0
-        self.len = -1
+        self.len = self.op.a.length()*self.op.b.length()
 
     def step(self, delta, const=-1):
         if(self.bstep < 0):
@@ -3254,12 +3252,14 @@ class Cross(SCModule):
     def reset(self):
         self.op.reset()
         self.cur = 0
+        self.acount = 1
         self.bstep = 1/(self.op.a.length())
         self.len = self.op.a.length()*self.op.b.length()
 
     def clear(self):
         self.op.clear()
         self.cur = 0
+        self.acount = 1
         self.bstep = 1/self.op.a.length()
         self.len = self.op.a.length()*self.op.b.length()
 
@@ -3276,6 +3276,7 @@ class Cross(SCModule):
         tmp = Cross(self.op.clone())
         tmp.bstep = self.bstep
         tmp.cur = self.cur
+        tmp.acount = self.acount
         tmp.len = self.len
         return tmp
 
