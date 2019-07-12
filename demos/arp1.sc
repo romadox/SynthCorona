@@ -2,6 +2,9 @@
 
 IMP core.sc   // Import Core Sounds
 
+CFG
+TEMPO: 90
+
 INS
 // Base waveform -- sort of a lop-sided triangle wave
 WV: [0i<w=2>9,9i<w=2>0,0i-9,-9i0]
@@ -16,9 +19,9 @@ B<BASE=WV>: EVsc(1,SPD_EQT_UP3,SPD_EQT_UP7,2)
 C<BASE=WV>: EVsc(1,SPD_EQT_UP3,SPD_EQT_UP7,SPD_EQT_UP10)
 
 SEQ A
-E4: |                |        C-------|
 A3: |B-------        |B-------        |
 G3: |        A-------|                |
+E3: |                |        C-------|
 
 SEQ B
 A3: |B----   |
