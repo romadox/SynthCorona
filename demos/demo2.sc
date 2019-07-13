@@ -3,7 +3,7 @@
 IMP core.sc   // Import Core Sounds. You'll need core.sc in the same folder as this.
 
 CFG   // Config chunk
-TEMPO: 90   // 80 beats per minute
+TEMPO: 90   // 90 beats per minute
 NORM: T     // Normalize on
 
 INS
