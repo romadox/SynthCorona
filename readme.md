@@ -105,7 +105,7 @@ to. By default, Module "A" (the first Module you list) is the lead.
 However, there are times when you might need to use the length from
 "B", so this is an option via a meta-tag:
 <code>A/\<lead=B>B</code>
-This creates a Division operation that will use the length of "B" as
+This example creates a Division operation that will use the length of "B" as
 its lead.
 
 - Typically Interpolate has a width of 1, meaning it does its full
@@ -115,7 +115,7 @@ In this instance, we are saying that we want to interpolate A to B
 but we want to do it over 4 steps ("\<w=4>").
 
 - The level operation is like volume--each item in B is converted
-into a percentage (-1 to 1), which is this multiplied by the value
+into a percentage (-1 to 1), which is then multiplied by the value
 in A. This is equivalent to <code>A*(B/9)</code>, since we use 9 as a maximum value.
 
 - Envelope is similar to a combination of Level and Constant. Time
