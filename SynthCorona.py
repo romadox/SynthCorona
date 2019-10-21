@@ -48,6 +48,11 @@ STOP = -2
 # it was stepped previously. Accordingly, Insts should step the delta value
 # exactly, without applying rate or frequency adjustments.
 ADJUST = -3
+# Tells modules inside an instrument to release--specifically Envelope.
+# Inst does not pass on STOP commands, because nested Insts might not need to
+# stop (i.e., a waveform should not stop). We send release instead, to let
+# modules know a release has occurred, but that they should not stop.
+RELEASE = -4
 
 class SCParseError(Exception):
     """ Exception for syntax errors discovered while parsing a SC file. """
@@ -939,8 +944,15 @@ class SynthCorona:
             elif(op == "v"):
                 rate = 1
                 loop = False
+                atk = 0
+                rels = -1
                 for mt in meta:
-                    if(mt.startswith(("R","r","RATE","rate"))):
+                    if(mt.startswith(("REL","rel"))):
+                        mt = mt.split("=")[1].strip()
+                        rels = float(mt)
+                        if(rels == None or rels <= 0):
+                            rels = -1
+                    elif(mt.startswith(("R","r","RATE","rate"))):
                         mt = mt.split("=")[1].strip()
                         rate = float(mt)
                         if(rate == None or rate <= 0):
@@ -948,8 +960,13 @@ class SynthCorona:
                     elif(mt.startswith(("L","l","LOOP","loop"))):
                         mt = mt.split("=")[1].strip()
                         loop = mt.startswith(("T","t","1"))
+                    elif(mt.startswith(("ATK","atk","ATTACK","attack"))):
+                        mt = mt.split("=")[1].strip()
+                        atk = float(mt)
+                        if(atk == None or atk < 0):
+                            atk = 0
                 modA = Envelope(modA, mdl,
-                        (self.tempo*self.beat)/(60*self.rate)*rate,loop)
+                        (self.tempo*self.beat)/(60*self.rate)*rate,loop,atk,rels)
             # s indicates Speed/Playback rate. This is applied to constant time
             # updates as well, so it does affect pitch!
             elif(op == "s"):
@@ -959,6 +976,9 @@ class SynthCorona:
                         mt = mt.split("=")[1]
                         alead = not (mt.startswith("B") or mt.startswith("b"))
                 modA = Speed(modA, mdl, alead)
+            # n indicates Length override.
+            elif(op == "n"):
+                modA = Length(modA, mdl)
             # If we need to, wrap the operation module in a Cross module.
             if(cross):
                 modA = Cross(modA)
@@ -1008,13 +1028,16 @@ class SynthCorona:
             stng = stng[1:len(stng)].lstrip()
             # Const currently offers 2 meta tags: 'r' or 'rate' for the speed,
             # and 'l' or 'loop' for whether to loop the results.
-            if(stng[0] == "<"):
-                end = stng.find(">")
-                if(end<0):
-                    raise SCParseError("Missing '>' in meta tag.",line)
-                end += 1
-                meta, stng = stng[0:end], stng[end:len(stng)]
-                meta = meta[1:len(meta)-1].strip().split(",")
+            #if(stng[0] == "<"):
+            #    end = stng.find(">")
+            #    if(end<0):
+            #        raise SCParseError("Missing '>' in meta tag.",line)
+            #    end += 1
+            #    meta, stng = stng[0:end], stng[end:len(stng)]
+            if(len(stng)>0 and stng[0] == "<"):
+                meta = self.parseMeta(stng)
+                meta, stng = meta[0], meta[1]
+                #meta = meta[1:len(meta)-1].strip().split(",")
                 for mt in meta:
                     if(mt.startswith(("R", "r", "RATE", "rate"))):
                         const = float(mt.split("=")[1])
@@ -1024,13 +1047,14 @@ class SynthCorona:
                         mt = mt.split("=")[1].strip()
                         cloop = mt.startswith(("T","t","1"))
 
+        value = None
         # For TONE or generic modules, 2-char pitch literal ("d4").
         if((type == TONE or type == MDLE) and stng[0:2] in self.tones):
-            modA = Val(self.tones[stng[0:2]])
+            value = self.tones[stng[0:2]]
             stng = stng[2:len(stng)]
         # For TONE or generic modules, 3-char pitch literal ("C#4")
         elif((type == TONE or type == MDLE) and stng[0:3] in self.tones):
-            modA = Val(self.tones[stng[0:3]])
+            value = self.tones[stng[0:3]]
             stng = stng[3:len(stng)]
         # Numeric literal
         elif(stng[0].isnumeric() or stng[0] == "."):
@@ -1038,8 +1062,20 @@ class SynthCorona:
             while(len(stng)>0 and (stng[0].isnumeric() or stng[0] == ".")):
                 num = num + stng[0]
                 stng = stng[1:len(stng)]
-            num = float(num)
-            modA = Val(num)
+            value = float(num)
+
+        # A value module, either from pitch or numerics parsed above
+        if(value != None):
+            vlength = 1
+            if(len(stng)>0 and stng[0] == "<"):
+                meta = self.parseMeta(stng)
+                meta, stng = meta[0], meta[1]
+                #meta = meta[1:len(meta)-1].strip().split(",")
+                for mt in meta:
+                    if(mt.startswith(("LEN","len","LN","ln"))):
+                        mt = mt.split("=")[1].strip()
+                        vlength = float(mt)
+            modA = Val(value, vlength)
         # Pattern
         elif(stng[0] == "["):
             set = self.extractPattern(stng,line)
@@ -1091,7 +1127,14 @@ class SynthCorona:
                     #print("Error! Invalid inst: " + name + ". Line: " + str(line))
             elif(type == TONE):
                 if(name in self.tones):
-                    modA = Val(self.tones[name])
+                    vlength = 1
+                    for mt in meta:
+                        if(mt.startswith(("LEN","len","LN","ln"))):
+                            mt = mt.split("=")[1].strip()
+                            vlength = float(mt)
+                            if(vlength == None or vlength <= 0):
+                                vlength = 1
+                    modA = Val(self.tones[name], vlength)
                 elif(name in self.modules):
                     modA = self.modules[name].clone()
                 else:
@@ -1447,7 +1490,6 @@ class SeqLine(SCModule):
             self.pitch.step(self.parent.frameslice, 1)
             self.pan.step(self.parent.frameslice,1)
             if(self.curInst != None):
-                self.curInst.step(delta, const)
                 if(self.cur >= self.parent.framesperstep-self.parent.rel_time and
                         (self.curInx >= len(self.pat)-1 or self.pat[self.curInx+1] != "-")):
                     self.curInst.stop()
@@ -1456,21 +1498,15 @@ class SeqLine(SCModule):
                 elif(self.curInst.stopped):
                     self.seq.tails.append(self.curInst.clone())
                     self.curInst = None
+                else:
+                    self.curInst.step(delta,const)
 
-            if(self.cur >= self.parent.framesperstep):
-                self.cur %= self.parent.framesperstep
-                self.curInx += 1
-                if(not self.done()):
-                    if(self.pat[self.curInx] != "-"):
-                        #if(self.curInst != None):
-                        #    self.curInst.stop()
-                        #    self.seq.tails.append(self.curInst.clone())
-                        self.curInst = self.pat[self.curInx]
-                #else:
-                #    if(self.curInst != None):
-                #        self.curInst.stop()
-                #        self.seq.tails.append(self.curInst.clone())
-                #        self.curInst = None
+        if(self.cur >= self.parent.framesperstep):
+            self.cur %= self.parent.framesperstep
+            self.curInx += 1
+            if(not self.done()):
+                if(self.pat[self.curInx] != "-"):
+                    self.curInst = self.pat[self.curInx]
 
     def read(self,tails=False,stereo=True,signal=True):
         if(stereo):
@@ -1761,12 +1797,14 @@ class Song(SCModule):
         self.tails = []
 
     def step(self, delta, const=-1):
+        # Step Sequences that are sustaining (self.tails)
         for t in self.tails:
             t.step_tails(delta, const)
             if(t.done()):
                 self.tails.remove(t)
         if(self.curInx < len(self.pat)):
             self.pat[self.curInx].step(delta,delta)
+            # Step sustained notes in current Sequence
             self.pat[self.curInx].step_tails(delta,delta)
             if(self.pat[self.curInx].done()):
                 self.pat[self.curInx].step(0,STOP)
@@ -1894,14 +1932,21 @@ class Inst(SCModule):
                 return
             # stop command
             elif(const == STOP):
+                self.mdl.step(0,RELEASE)
+                self.pan.step(0,RELEASE)
                 if(self.sus):
                     self.release = self.mdl
                 else:
                     if(not self.mdl.done()):
-                        self.release = Multiply(self.mdl.clone(), Const(LinInterp(Val(1),Val(0),self.parent.rel_time),1),False)
+                        self.release = Multiply(self.mdl, Const(LinInterp(Val(1),Val(0),self.parent.rel_time),1),False)
                     else:
                         self.release = Const(LinInterp(StereoVal([self.last[0],self.last[1]]),Val(0),self.parent.rel_time),1)
                 self.stopped = True
+                return
+            # release command -- pass this forward to our module
+            elif(const == RELEASE):
+                self.mdl.step(0,const)
+                self.pan.step(0,const)
                 return
             # otherwise, set const to delta
             else:
@@ -1996,13 +2041,15 @@ class Val(SCModule):
         This module has length 1 and always returns its value on read().
     """
 
-    def __init__(self, val=0):
+    def __init__(self, val=0, ln=1):
         self.val = val
         self.cur = 0
         self.no_tails = True
+        self.len = ln
 
     def step(self, delta, const=-1):
-        self.cur += delta
+        if(const >= 0 or const == DELTA or const == ADJUST):
+            self.cur += delta
 
     def step_tails(self, delta, const=-1):
         self.step(delta, const)
@@ -2021,21 +2068,21 @@ class Val(SCModule):
         self.cur = 0
 
     def done(self):
-        return self.cur >= 1
+        return self.cur >= self.len
 
     def get_extra(self):
         if(self.done()):
-            return self.cur-1
+            return self.cur-self.len
         else:
             return 0
 
     def clone(self):
-        tmp = Val(self.val)
+        tmp = Val(self.val, self.len)
         tmp.cur = self.cur
         return tmp
 
     def length(self):
-        return 1
+        return self.len
 
     def set_freq(self, freq):
         pass
@@ -2050,19 +2097,22 @@ class StereoVal(SCModule):
         Like Val, StereoVal has a length of 1.
     """
 
-    def __init__(self, val=[0,0]):
+    def __init__(self, val=[0,0], ln=1):
         """ Initializer.
 
             Arguments:
             val -- The value, as a 2-tuple or 2-list.
+            ln -- The module length. Defaults to 1.
         """
 
         self.val = val
         self.cur = 0
         self.no_tails = True
+        self.len = ln
 
     def step(self, delta, const=-1):
-        self.cur += delta
+        if(const >= 0 or const == DELTA or const == ADJUST):
+            self.cur += delta
 
     def step_tails(self, delta, const=-1):
         self.step(delta, const)
@@ -2081,21 +2131,21 @@ class StereoVal(SCModule):
         self.cur = 0
 
     def done(self):
-        return self.cur >= 1
+        return self.cur >= self.len
 
     def get_extra(self):
         if(self.done()):
-            return self.cur-1
+            return self.cur-self.len
         else:
             return 0
 
     def clone(self):
-        tmp = StereoVal(self.val)
+        tmp = StereoVal(self.val, self.len)
         tmp.cur = self.cur
         return tmp
 
     def length(self):
-        return 1
+        return self.len
 
     def set_freq(self, freq):
         pass
@@ -2125,7 +2175,7 @@ class Pattern(SCModule):
     def step(self, delta, const=-1):
         if(not self.done()):
             self.pat[self.curInx].step(delta, const)
-            if(self.pat[self.curInx].done()):
+            while(not self.done() and self.pat[self.curInx].done()):
                 self.extra = self.pat[self.curInx].get_extra()
                 self.pat[self.curInx].reset()
                 self.curInx += 1
@@ -2337,6 +2387,7 @@ class Series(SCModule):
                 return sum
         else:
             if(self.srs[self.curInx].done()):
+                # This section probably should never happen -- should we just return 0?
                 extra = self.srs[self.curInx].get_extra()
                 self.srs[self.curInx].reset()
                 self.srs[self.curInx].step(extra,ADJUST)
@@ -2517,7 +2568,7 @@ class Envelope(SCModule):
         Negative values will similarly invert the output.
     """
 
-    def __init__(self, mdl, env, rate=1, loop=False):
+    def __init__(self, mdl, env, rate=1, loop=False, atk=0, rels=-1):
         """ Initializer.
 
             Arguments:
@@ -2526,6 +2577,9 @@ class Envelope(SCModule):
             rate -- Playback rate for the envelope module. 1 is in time with
                     song steps; 2 is twice as fast; 0.5 half, etc.
             loop -- Whether to loop when the volume module is finished.
+            atk  -- The attack marker, used when looping.
+            rels -- The release point, in song steps. Will loop up to this
+                    point until STOP, then will play through. -1 for no release.
         """
 
         self.a = mdl
@@ -2536,24 +2590,41 @@ class Envelope(SCModule):
         # (don't ask me why though)
         self.rate = rate
         self.loop = loop
+        self.attack = atk
+        self.release = rels
+        self.cur = 0
+        self.stopped = False
 
     def step(self, delta, const=-1):
-        if(const == STOP):
+        if(const == STOP or const == RELEASE):
             self.a.step(0,const)
             self.b.step(0,const)
+            self.stopped = True
         elif(const == ADJUST):
+            self.cur += delta
             self.b.step(delta, const)
         else:
             if(const == DELTA):
                 const = delta
             self.a.step(delta, const)
             self.b.step(const*self.rate, const)
+
+            self.cur += const*self.rate
+            # If a release point is set, we will loop at it until STOP, then play through
+            if(self.release > 0):
+                if(not self.stopped and self.cur >= self.release):
+                    self.cur %= self.release
+                    self.cur += self.attack
+                    self.b.reset()
+                    self.b.step(self.cur,ADJUST)
+
             if(self.a.done()):
                 extra = self.a.get_extra()
                 self.a.reset()
                 self.a.step(extra,ADJUST)
             if(self.loop and self.b.done()):
                 extra = self.b.get_extra()
+                extra += self.attack
                 self.b.reset()
                 self.b.step(extra,ADJUST)
 
@@ -2566,7 +2637,7 @@ class Envelope(SCModule):
             return self.a.read(tails,stereo,signal)*as_decimal(self.b.read(tails,stereo,True))
 
     def step_tails(self, delta, const=-1):
-        if(const == -1):
+        if(const == DELTA):
             const = delta
         self.a.step_tails(delta,const)
         self.b.step_tails(const*self.rate, const)
@@ -2575,10 +2646,14 @@ class Envelope(SCModule):
         if(self.loop):
             self.a.reset()
             self.b.reset()
+            self.b.step(self.attack,ADJUST)
+            self.cur = self.attack
 
     def clear(self):
         self.a.clear()
         self.b.clear()
+        self.cur = 0
+        self.stopped = False
 
     def done(self):
         return self.b.done()
@@ -2590,7 +2665,10 @@ class Envelope(SCModule):
         return self.b.length()/self.rate
 
     def clone(self):
-        return Envelope(self.a.clone(), self.b.clone(), self.rate, self.loop)
+        tmp = Envelope(self.a.clone(), self.b.clone(), self.rate, self.loop, self.attack, self.release)
+        tmp.stopped = self.stopped
+        tmp.cur = self.cur
+        return tmp
 
     def set_freq(self, freq):
         self.a.set_freq(freq)
@@ -2619,8 +2697,8 @@ class Const(SCModule):
         self.loop = loop
 
     def step(self, delta, const=-1):
-        if(const == STOP):
-            self.mdl.step(delta,STOP)
+        if(const == STOP or const == RELEASE):
+            self.mdl.step(0,const)
         elif(const == ADJUST):
             self.mdl.step(delta, ADJUST)
         else:
@@ -2685,10 +2763,10 @@ class Speed(SCModule):
     def step(self, delta, const=-1):
         if(const >= 0):
             self.mdl.step(delta*self.rate.read(stereo=False,signal=False),const*self.rate.read(stereo=False,signal=False))
-        elif(const == -1):
+        elif(const == DELTA):
             self.mdl.step(delta*self.rate.read(stereo=False,signal=False),delta*self.rate.read(stereo=False,signal=False))
-        elif(const == STOP):
-            self.mdl.step(delta*self.rate.read(stereo=False,signal=False),const)
+        elif(const == STOP or const == RELEASE):
+            self.mdl.step(0,const)
         elif(const == ADJUST):
             self.mdl.step(delta, const)
         self.rate.step(delta,const)
@@ -2770,7 +2848,8 @@ class LinInterp(SCModule):
         self.no_tails = True
 
     def step(self, delta, const=-1):
-        self.cur += delta
+        if(const != STOP and const != RELEASE):
+            self.cur += delta
         self.a.step(delta,const)
         if(self.a.done() and not self.done()):
             extra = self.a.get_extra()
@@ -3285,6 +3364,78 @@ class Cross(SCModule):
 
     def set_freq(self, freq):
         self.op.set_freq(freq)
+
+class Length(SCModule):
+    """ Overrides the length of a given module. This will:
+        - Repeat the module if it stops before length is met.
+        - Halt the module early if the length is met before it ends
+          (may cause pops!)
+
+        This module takes two inputs, A and B, where A is the signal module
+        and B determines the length.
+    """
+
+    def __init__(self, a, b):
+        """ Initializer.
+
+            Arguments:
+            A - The signal module, to be length-overridden.
+            B - The length.
+        """
+
+        self.a = a
+        self.b = b
+        self.cur = 0
+
+    def step(self, delta, const=-1):
+        self.cur += delta
+        self.a.step(delta,const)
+        self.b.step(delta,const)
+
+        if(not self.done()):
+            if(self.a.done()):
+                self.a.reset()
+            if(self.b.done()):
+                self.b.reset()
+
+    def step_tails(self, delta, const=-1):
+        self.a.step_tails(delta,const)
+        self.b.step_tails(delta,const)
+
+    def read(self, tails=False,stereo=True,signal=True):
+        return self.a.read(tails,stereo,signal)
+
+    def reset(self):
+        self.cur = 0
+        self.a.reset()
+        self.b.reset()
+
+    def clear(self):
+        self.cur = 0
+        self.a.reset()
+        self.b.reset()
+
+    def done(self):
+        return self.cur >= self.b.read(stereo=False)
+
+    def get_extra(self):
+        if(self.done()):
+            return self.cur - self.b.read(stereo=False)
+        else:
+            return 0
+
+    def length(self):
+        return self.b.read(stereo=False)
+
+    def set_freq(self,freq):
+        self.a.set_freq(freq)
+        self.b.set_freq(freq)
+
+    def clone(self):
+        tmp = Length(self.a.clone(),self.b.clone())
+        tmp.cur = self.cur
+        return tmp
+
 
 def gcd(a, b):
     """ Calculates greatest common denominator.
