@@ -3,6 +3,8 @@
     This is a little code language for creating chiptunes. It features a highly
     modular design which can be applied to instruments, pitches, sequences,
     and patterns.
+    
+    Version 1.1.0
 
 """
 
