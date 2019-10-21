@@ -128,7 +128,7 @@ playing.
 There are four properties you can set with envelopes:
       <ul>
             <li>
-                  RATE ("R") controls how fast the envelope plays, in song-steps.
+                  <b>RATE</b> ("R") controls how fast the envelope plays, in song-steps.
                   For instance:
                         <code>Av\<r=2>[0,1,2,3]</code>
                   This sets the rate to 2 (<code>\<r=2></code>), which means we will take two
@@ -136,7 +136,7 @@ There are four properties you can set with envelopes:
                   is <code>A</code>, and the volume levels are <code>[0,1,2,3]</code>.
             </li>
             <li>
-                  LOOP ("L") tells the envelope whether to repeat after it is finished.
+                  <b>LOOP</b> ("L") tells the envelope whether to repeat after it is finished.
                   <code>Av\<l=T>[3,4,5]</code>
                   In this example, we have set loop to True (<code>\<l=T></code>), so we will
                   cycle through the volumes, creating a jagged tremolo effect.
@@ -148,12 +148,12 @@ There are four properties you can set with envelopes:
                   By default, LOOP is set to "True".
             </li>
             <li>
-                  ATTACK ("ATK") sets the envelope attack point. When the envelope loops, it will
+                  <b>ATTACK</b> ("ATK") sets the envelope attack point. When the envelope loops, it will
                   start back at this point, so any fade-in section is not also repeated.
                   By default this is set to 0, which is the same as having no attack period.
             </li>
             <li>
-                  RELEASE ("REL") sets the envelope release point. Anything after the release
+                  <b>RELEASE</b> ("REL") sets the envelope release point. Anything after the release
                   point will only be played if the note has been released. While the note is 
                   sustaining, the envelope will loop back from RELEASE to ATTACK (or the 
                   beginning, if no ATTACK is set). By default, RELEASE is set to -1, which 
