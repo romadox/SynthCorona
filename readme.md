@@ -94,10 +94,12 @@ creating your song.
         -    |   Invert      | Inverts an item                  |     -4
         c    |   Constant    | Run A with Song Steps, not freq  |     cA
         s    |   Speed       | Run A at Bx speed (as a ratio)   |     AsB
+        n    |   Length      | Set the duration of A to B.      |     AnB
 
 <h3>Notes:</h3>
 
-- Add, Subtract, Multiply, Divide, and Level all perform operations
+<ul>
+<li>Add, Subtract, Multiply, Divide, and Level all perform operations
 on two different Modules, "A" and "B". Since these can have different
 lengths, one Module is assigned the "lead", meaning we will stop
 once it is finished, and we will reset the other module if we have
@@ -107,44 +109,60 @@ However, there are times when you might need to use the length from
 <code>A/\<lead=B>B</code>
 This example creates a Division operation that will use the length of "B" as
 its lead.
-
-- Typically Interpolate has a width of 1, meaning it does its full
+</li>
+<li>Typically Interpolate has a width of 1, meaning it does its full
 gradient in one step. You can change this width using a
 meta-tag: <code>Ai\<w=4>B</code>
 In this instance, we are saying that we want to interpolate A to B
 but we want to do it over 4 steps ("\<w=4>").
-
-- The level operation is like volume--each item in B is converted
+</li>
+<li>The level operation is like volume--each item in B is converted
 into a percentage (-1 to 1), which is then multiplied by the value
 in A. This is equivalent to <code>A*(B/9)</code>, since we use 9 as a maximum value.
-
-- Envelope is similar to a combination of Level and Constant. Time
+</li>
+<li>Envelope is similar to a combination of Level and Constant. Time
 is processed based on song steps for module B, so the envelope
 will be the same length regardless of the pitch the instrument is
 playing.
 
-There are two properties you can set with envelopes:
-RATE ("R") controls how fast the envelope plays, in song-steps.
-For instance:
-      <code>Av\<r=2>[0,1,2,3]</code>
-This sets the rate to 2 (<code>\<r=2></code>), which means we will take two
-envelope steps per song step. The instrument we are enveloping
-is <code>A</code>, and the volume levels are <code>[0,1,2,3]</code>.
-
-Additionally, you can set the LOOP property of an envelope, to
-tell it whether to repeat after the envelope is finished.
-      <code>Av\<l=T>[3,4,5]</code>
-In this example, we have set loop to True (<code>\<l=T></code>), so we will
-cycle through the volumes, creating a jagged tremolo effect.
-      <code>Av\<l=F>[3,4,5,4,2,0]</code>
-In this example, we will not loop the envelope, so we will raise
-the volume to 5, then down to 0, and that is when the instrument
-will stop.
-
-It's a good idea to end these envelopes with a 0, to reduce pops.
-By default, LOOP is set to "True".
-
-- The Constant operation allows you to make other modules behave like the
+There are four properties you can set with envelopes:
+      <ul>
+            <li>
+                  RATE ("R") controls how fast the envelope plays, in song-steps.
+                  For instance:
+                        <code>Av\<r=2>[0,1,2,3]</code>
+                  This sets the rate to 2 (<code>\<r=2></code>), which means we will take two
+                  envelope steps per song step. The instrument we are enveloping
+                  is <code>A</code>, and the volume levels are <code>[0,1,2,3]</code>.
+            </li>
+            <li>
+                  LOOP ("L") tells the envelope whether to repeat after it is finished.
+                  <code>Av\<l=T>[3,4,5]</code>
+                  In this example, we have set loop to True (<code>\<l=T></code>), so we will
+                  cycle through the volumes, creating a jagged tremolo effect.
+                        <code>Av\<l=F>[3,4,5,4,2,0]</code>
+                  In this example, we will not loop the envelope, so we will raise
+                  the volume to 5, then down to 0, and that is when the instrument
+                  will stop.
+                  It's a good idea to end these envelopes with a 0, to reduce pops.
+                  By default, LOOP is set to "True".
+            </li>
+            <li>
+                  ATTACK ("ATK") sets the envelope attack point. When the envelope loops, it will
+                  start back at this point, so any fade-in section is not also repeated.
+                  By default this is set to 0, which is the same as having no attack period.
+            </li>
+            <li>
+                  RELEASE ("REL") sets the envelope release point. Anything after the release
+                  point will only be played if the note has been released. While the note is 
+                  sustaining, the envelope will loop back from RELEASE to ATTACK (or the 
+                  beginning, if no ATTACK is set). By default, RELEASE is set to -1, which 
+                  indicates that the envelope has no release point.
+            </li>
+      </ul>
+</li>
+<li>
+The Constant operation allows you to make other modules behave like the
 Envelope module, where time is based in song-steps. Constant also has
 both the RATE and the LOOP options, which work just like they do in
 Envelope.
@@ -156,8 +174,8 @@ if we do:
 The first pattern is going to update at a different speed than the
 second, so even though they are the same lengths, they are not going
 to finish at the same time.
-
-- The Cross operation is to be combined with another operator
+</li>
+<li>The Cross operation is to be combined with another operator
 ("x*" or "xl", etc.). With Cross, we will step through each item in A
 before stepping to the next B. For example, see how the addition of
 these two patterns is is different with and without Cross:
@@ -178,7 +196,8 @@ these two patterns is is different with and without Cross:
                      3+1         4                3+2        5
                      4+2         6                4+2        6
 
-
+</li>
+</ul>
 <h2>VI. Instruments</h2>
 
 Instruments are described with a name, metadata, and a definition:
