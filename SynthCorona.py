@@ -4,7 +4,7 @@
     modular design which can be applied to instruments, pitches, sequences,
     and patterns.
 
-    Version 1.1.0
+    Version 1.1.1
 
 """
 
@@ -1630,14 +1630,11 @@ class Sequence(SCModule):
                 # changing instrument pitches.
                 # However, this means we MUST update Seq's once per sample.
                 if(not ln.done()):
-                    # doing a 1,1 step, because Song will send frameslice as delta
-                    #ln.step(1,1)
                     ln.step(delta,1)
 
     def step_tails(self, delta, const=-1):
         for t in self.tails:
             # just a regular step here: we're stepping the Insts in tails
-            #t.step(1,1)
             t.step(delta,1)
             if(t.done()):
                 self.tails.remove(t)
@@ -1804,15 +1801,13 @@ class Song(SCModule):
     def step(self, delta, const=-1):
         # Step Sequences that are sustaining (self.tails)
         for t in self.tails:
-            t.step_tails(self.parent.frameslice, const)
+            t.step_tails(delta, const)
             if(t.done()):
                 self.tails.remove(t)
         if(self.curInx < len(self.pat)):
             self.pat[self.curInx].step(delta,delta)
-            self.pat[self.curInx].step_tails(delta,delta)
-            #self.pat[self.curInx].step(self.parent.frameslice,delta)
             # Step sustained notes in current Sequence
-            #self.pat[self.curInx].step_tails(self.parent.frameslice,delta)
+            self.pat[self.curInx].step_tails(delta,delta)
             if(self.pat[self.curInx].done()):
                 self.pat[self.curInx].step(0,STOP)
                 if(getattr(self.pat[self.curInx], "no_tails", None) == None):
