@@ -3,7 +3,7 @@
     This is a little code language for creating chiptunes. It features a highly
     modular design which can be applied to instruments, pitches, sequences,
     and patterns.
-    
+
     Version 1.1.0
 
 """
@@ -1630,11 +1630,14 @@ class Sequence(SCModule):
                 # changing instrument pitches.
                 # However, this means we MUST update Seq's once per sample.
                 if(not ln.done()):
+                    # doing a 1,1 step, because Song will send frameslice as delta
+                    #ln.step(1,1)
                     ln.step(delta,1)
 
     def step_tails(self, delta, const=-1):
         for t in self.tails:
             # just a regular step here: we're stepping the Insts in tails
+            #t.step(1,1)
             t.step(delta,1)
             if(t.done()):
                 self.tails.remove(t)
@@ -1801,13 +1804,15 @@ class Song(SCModule):
     def step(self, delta, const=-1):
         # Step Sequences that are sustaining (self.tails)
         for t in self.tails:
-            t.step_tails(delta, const)
+            t.step_tails(self.parent.frameslice, const)
             if(t.done()):
                 self.tails.remove(t)
         if(self.curInx < len(self.pat)):
             self.pat[self.curInx].step(delta,delta)
-            # Step sustained notes in current Sequence
             self.pat[self.curInx].step_tails(delta,delta)
+            #self.pat[self.curInx].step(self.parent.frameslice,delta)
+            # Step sustained notes in current Sequence
+            #self.pat[self.curInx].step_tails(self.parent.frameslice,delta)
             if(self.pat[self.curInx].done()):
                 self.pat[self.curInx].step(0,STOP)
                 if(getattr(self.pat[self.curInx], "no_tails", None) == None):
@@ -2054,7 +2059,8 @@ class Val(SCModule):
             self.cur += delta
 
     def step_tails(self, delta, const=-1):
-        self.step(delta, const)
+        #self.step(delta, const)
+        pass
 
     # 'tails' here is irrelevant; search for "no_tails" property to avoid doubling
     def read(self,tails=False,stereo=True,signal=True):
@@ -3396,9 +3402,13 @@ class Length(SCModule):
 
         if(not self.done()):
             if(self.a.done()):
+                extra = self.a.get_extra()
                 self.a.reset()
+                self.a.step(extra,ADJUST)
             if(self.b.done()):
+                extra = self.b.get_extra()
                 self.b.reset()
+                self.b.step(extra,ADJUST)
 
     def step_tails(self, delta, const=-1):
         self.a.step_tails(delta,const)
