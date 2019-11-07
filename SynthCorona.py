@@ -4,7 +4,7 @@
     modular design which can be applied to instruments, pitches, sequences,
     and patterns.
 
-    Version 1.1.1
+    Version 1.2.0
 
 """
 
