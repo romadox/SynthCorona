@@ -70,7 +70,7 @@ operators.
 You can use the same name for an Instrument and a Sequence, but obviously
 not the same name for two of the same kind.
 
-Here are the current reserved characters: <code>+-*/rixlvcs{}[]()\<>.,|</code>
+Here are the current reserved characters: <code>+-*/%rixlvcstnjk{}[]()\<>.,|</code>
 
 <h2>V. Operators</h2>
 
@@ -86,6 +86,7 @@ creating your song.
         -    |   Subtract    | Subtracts two items              |     C-A
         *    |   Multiply    | Multiply two items together      |     3*B
         /    |   Divide      | Divides an item by another       |     B/2
+        %    |   Modulus     | Remainder after dividing values  |     A%B 
         l    |   Level       | Uses B as a level (0-9) for A    |     AlB
         v    |   Envelope    | Like level, at a constant speed  |     AvB
         i    |   Interpolate | Lin. Interp. A to B, over W steps|     AiB
@@ -95,11 +96,14 @@ creating your song.
         c    |   Constant    | Run A with Song Steps, not freq  |     cA
         s    |   Speed       | Run A at Bx speed (as a ratio)   |     AsB
         n    |   Length      | Set the duration of A to B.      |     AnB
+        t    |   Absolute Val| Returns absolute value of A.     |     tA
+        k    |   Attack Pt.  | Set looping Attack point         |     AkB
+        j    |   Release Pt. | Set looping Release point        |     AjB
 
 <h3>Notes:</h3>
 
 <ul>
-<li>Add, Subtract, Multiply, Divide, and Level all perform operations
+<li>Add, Subtract, Multiply, Divide, Modulus, and Level all perform operations
 on two different Modules, "A" and "B". Since these can have different
 lengths, one Module is assigned the "lead", meaning we will stop
 once it is finished, and we will reset the other module if we have
@@ -164,7 +168,7 @@ There are four properties you can set with envelopes:
 <li>
 The Constant operation allows you to make other modules behave like the
 Envelope module, where time is based in song-steps. Constant also has
-both the RATE and the LOOP options, which work just like they do in
+both the RATE, LOOP, ATTACK, and RELEASE options, which work just like they do in
 Envelope.
 
 One thing to take note of with Constant-time modules is that they do
@@ -196,6 +200,9 @@ these two patterns is is different with and without Cross:
                      3+1         4                3+2        5
                      4+2         6                4+2        6
 
+</li>
+<li>
+The Repeat module also supports ATTACK and RELEASE. These work similar to how they do in Envelope and Const, except that Repeat will also play past the Release point on its final repetition, even if the instrument has not been released yet.
 </li>
 </ul>
 <h2>VI. Instruments</h2>
