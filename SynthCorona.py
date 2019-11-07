@@ -19,9 +19,9 @@ import sys, random, time
 HEADERS = {"CFG", "INS", "MDL", "SEQ", "PAT", "BLK", "SNG", "IMP"}
 # Reserved symbols (which cannot be used in names)
 # Note: Names can contain numbers, but they cannot begin with a number.
-RESERVED = "+-*/%rixlvcsnmt{}[]()<>.,|"
+RESERVED = "+-*/%rixlvcsnmtjk{}[]()<>.,|"
 # List of operators
-OPERATORS = "+-=*/%rixlvsnmt"
+OPERATORS = "+-=*/%rixlvsnmtjk"
 # Rendering chunk size -- atm, only determines how often progress label
 # is updated (in samples).
 CHUNK = 1028*1
