@@ -19,9 +19,9 @@ import sys, random, time
 HEADERS = {"CFG", "INS", "MDL", "SEQ", "PAT", "BLK", "SNG", "IMP"}
 # Reserved symbols (which cannot be used in names)
 # Note: Names can contain numbers, but they cannot begin with a number.
-RESERVED = "+-*/rixlvcs{}[]()<>.,|"
+RESERVED = "+-*/%rixlvcsnmt{}[]()<>.,|"
 # List of operators
-OPERATORS = "+-=*/rixlvs"
+OPERATORS = "+-=*/%rixlvsnmt"
 # Rendering chunk size -- atm, only determines how often progress label
 # is updated (in samples).
 CHUNK = 1028*1
@@ -906,7 +906,20 @@ class SynthCorona:
                 modA = Subtract(modA, mdl,alead)
             # r indicates Repetition
             elif(op == "r"):                        # repetition
-                modA = Repeat(modA, mdl)
+                atk = 0
+                rels = -1
+                for mt in meta:
+                    if(mt.startswith(("REL","rel"))):
+                        mt = mt.split("=")[1].strip()
+                        rels = float(mt)
+                        if(rels == None or rels <= 0):
+                            rels = -1
+                    elif(mt.startswith(("ATK","atk","ATTACK","attack"))):
+                        mt = mt.split("=")[1].strip()
+                        atk = float(mt)
+                        if(atk == None or atk < 0):
+                            atk = 0
+                modA = Repeat(modA, mdl, atk, rels)
             # * indicates Multiplication.
             elif(op == "*"):                        # multiplication
                 alead = True
@@ -916,13 +929,21 @@ class SynthCorona:
                         alead = not (mt.startswith("B") or mt.startswith("b"))
                 modA = Multiply(modA, mdl, alead)
             # / indicates Division.
-            elif(op == "/"):                        # multiplication
+            elif(op == "/"):                        # division
                 alead = True
                 for mt in meta:
                     if(mt.startswith(("LEAD","LD","lead","ld"))):
                         mt = mt.split("=")[1]
                         alead = not (mt.startswith("B") or mt.startswith("b"))
                 modA = Divide(modA, mdl)
+            # % indicates Modulus.
+            elif(op == "%"):                        # modulus
+                alead = True
+                for mt in meta:
+                    if(mt.startswith(("LEAD","LD","lead","ld"))):
+                        mt = mt.split("=")[1]
+                        alead = not (mt.startswith("B") or mt.startswith("b"))
+                modA = Modulus(modA, mdl)
             # i indicates Interpolation.
             elif(op == "i"):
                 width = 1
@@ -981,6 +1002,36 @@ class SynthCorona:
             # n indicates Length override.
             elif(op == "n"):
                 modA = Length(modA, mdl)
+            elif(op == "j"):
+                modA = Release(modA, mdl)
+            elif(op == "k"):
+                modA = Attack(modA, mdl)
+            elif(op == "m"):                        # clip
+                alead = True
+                knee = Val(0)
+                for mt in meta:
+                    if(mt.startswith(("LEAD","LD","lead","ld"))):
+                        mt = mt.split("=")[1]
+                        alead = not (mt.startswith("B") or mt.startswith("b"))
+                    if(mt.startswith(("KNEE","knee","KN","kn"))):
+                        mt = mt.split("=")[1]
+                        if(mt in self.modules):
+                            knee = self.modules[mt].clone()
+                        elif(mt != "" and (mt[0].isnumeric() or mt[0]=="." or mt[0]=="-")):
+                            invert = False
+                            if(mt.startswith("-")):
+                                invert = True
+                                mt = mt[1:len(mt)]
+                            num = ""
+                            while(len(mt)>0 and (mt[0].isnumeric() or mt[0] == ".")):
+                                num = num + mt[0]
+                                mt = mt[1:len(mt)]
+                            num = float(num)
+                            knee = Val(num)
+                            if(invert):
+                                knee = Invert(knee)
+                modA = Limit(modA, mdl, alead, knee)
+
             # If we need to, wrap the operation module in a Cross module.
             if(cross):
                 modA = Cross(modA)
@@ -1009,45 +1060,64 @@ class SynthCorona:
         modA = None
         # Whether we will need to wrap with an Invert (indicated by a '-')
         invert = False
+        # Whether we will need to wrap with an Absolute value (indicated by a 't')
+        absolute = False
         # Constant-rate indicator. -1 means skip; Any positive value is read as
         # the rate value for a Const module.
         const = -1
         # If const != -1, this indicates whether our Const module should loop.
         cloop = True
+        # Attack value for constant module
+        catk = 0
+        # Release value for constant module
+        crels = -1
 
         stng = stng.lstrip()
-        # Throw an error if we are grabbing an empty module.
-        if(stng == "" or stng.isspace()):
-            raise SCParseError("Empty module at " + self.curParseModule + ".",line)
-            return (Val(0), "")
-        # A '-' indicates that we will invert the popped module (Invert).
-        if(stng[0] == "-"):
-            stng = stng[1:len(stng)]
-            invert = True
-        # A 'c' indicates that we will apply a constant-rate module (Const).
-        elif(stng[0] == "c"):
-            const = 1
-            stng = stng[1:len(stng)].lstrip()
-            # Const currently offers 2 meta tags: 'r' or 'rate' for the speed,
-            # and 'l' or 'loop' for whether to loop the results.
-            #if(stng[0] == "<"):
-            #    end = stng.find(">")
-            #    if(end<0):
-            #        raise SCParseError("Missing '>' in meta tag.",line)
-            #    end += 1
-            #    meta, stng = stng[0:end], stng[end:len(stng)]
-            if(len(stng)>0 and stng[0] == "<"):
-                meta = self.parseMeta(stng)
-                meta, stng = meta[0], meta[1]
-                #meta = meta[1:len(meta)-1].strip().split(",")
-                for mt in meta:
-                    if(mt.startswith(("R", "r", "RATE", "rate"))):
-                        const = float(mt.split("=")[1])
-                        if(const == None or const < 1):
-                            const = 1
-                    elif(mt.startswith(("L", "l", "LOOP", "loop"))):
-                        mt = mt.split("=")[1].strip()
-                        cloop = mt.startswith(("T","t","1"))
+        # Whether we are done pulling prefixes from the string (like "-", "c", "t")
+        pfx = True
+
+        while(pfx):
+            # Throw an error if we are grabbing an empty module.
+            if(stng == "" or stng.isspace()):
+                raise SCParseError("Empty module at " + self.curParseModule + ".",line)
+                return (Val(0), "")
+            # A '-' indicates that we will invert the popped module (Invert).
+            if(stng[0] == "-"):
+                stng = stng[1:len(stng)]
+                invert = not invert
+            # A 'c' indicates that we will apply a constant-rate module (Const).
+            elif(stng[0] == "c"):
+                const = 1
+                stng = stng[1:len(stng)].lstrip()
+                # Const currently offers 2 meta tags: 'r' or 'rate' for the speed,
+                # and 'l' or 'loop' for whether to loop the results.
+                if(len(stng)>0 and stng[0] == "<"):
+                    meta = self.parseMeta(stng)
+                    meta, stng = meta[0], meta[1]
+                    #meta = meta[1:len(meta)-1].strip().split(",")
+                    for mt in meta:
+                        if(mt.startswith(("REL","rel"))):
+                            mt = mt.split("=")[1].strip()
+                            crels = float(mt)
+                            if(crels == None or crels <= 0):
+                                crels = -1
+                        elif(mt.startswith(("R", "r", "RATE", "rate"))):
+                            const = float(mt.split("=")[1])
+                            if(const == None or const < 1):
+                                const = 1
+                        elif(mt.startswith(("L", "l", "LOOP", "loop"))):
+                            mt = mt.split("=")[1].strip()
+                            cloop = mt.startswith(("T","t","1"))
+                        elif(mt.startswith(("ATK","atk","ATTACK","attack"))):
+                            mt = mt.split("=")[1].strip()
+                            catk = float(mt)
+                            if(catk == None or catk < 0):
+                                catk = 0
+            elif(stng[0] == "t"):
+                stng = stng[1:len(stng)]
+                absolute = True
+            else:
+                pfx = False
 
         value = None
         # For TONE or generic modules, 2-char pitch literal ("d4").
@@ -1157,8 +1227,10 @@ class SynthCorona:
         # wrap modA with any single operatens
         if(invert):
             modA = Invert(modA)
+        if(absolute):
+            modA = AbsVal(modA)
         if(const>0):
-            modA = Const(modA,(self.tempo*self.beat)/(60*self.rate),const,cloop)
+            modA = Const(modA,(self.tempo*self.beat)/(60*self.rate),const,cloop,catk,crels)
 
         return (modA, stng)
 
@@ -1180,7 +1252,7 @@ class SynthCorona:
         if(stng[0] == "<"):
             endmeta = stng.find(">")
             if(endmeta<0):
-                raise SCParseException("Missing '>' in meta tag.",i)
+                raise SCParseError("Missing '>' in meta tag.",i)
             meta = stng[1:endmeta]
             stng = stng[endmeta+1:len(stng)]
             meta = meta.strip().split(",")
@@ -1330,10 +1402,11 @@ class SynthCorona:
         brace = 0
         bracket = 0
         paren = 0
+        meta = 0
         inx = 0
         while(inx < len(stng)):
             if(stng[inx]=="," and brace == 0
-                    and bracket == 0 and paren == 0):
+                    and bracket == 0 and paren == 0 and meta == 0):
                 bits.append(stng[0:inx])
                 stng = stng[inx+1:len(stng)]
                 inx = 0
@@ -1350,6 +1423,10 @@ class SynthCorona:
                     paren += 1
                 elif(stng[inx]==")"):
                     paren -= 1
+                elif(stng[inx]=="<"):
+                    meta += 1
+                elif(stng[inx]==">"):
+                    meta -= 1
                 inx += 1
         if(len(stng)>0):
             bits.append(stng)
@@ -1374,10 +1451,11 @@ class SynthCorona:
         brace = 0
         bracket = 0
         paren = 0
+        meta = 0
         inx = 0
         while(inx < len(stng)):
             if(stng[inx]=="," and brace == 0
-                    and bracket == 0 and paren == 0):
+                    and bracket == 0 and paren == 0 and meta == 0):
                 bits.append(stng[0:inx])
                 stng = stng[inx+1:len(stng)]
                 inx = 0
@@ -1394,6 +1472,10 @@ class SynthCorona:
                     paren += 1
                 elif(stng[inx]==")"):
                     paren -= 1
+                elif(stng[inx]=="<"):
+                    meta += 1
+                elif(stng[inx]==">"):
+                    meta -= 1
                 inx += 1
         if(len(stng)>0):
             bits.append(stng)
@@ -1419,10 +1501,11 @@ class SynthCorona:
         brace = 0
         bracket = 0
         paren = 0
+        meta = 0
         inx = 0
         while(inx < len(stng)):
             if(stng[inx]=="," and brace == 0
-                    and bracket == 0 and paren == 0):
+                    and bracket == 0 and paren == 0 and meta == 0):
                 bits.append(stng[0:inx])
                 stng = stng[inx+1:len(stng)]
                 inx = 0
@@ -1439,6 +1522,10 @@ class SynthCorona:
                     paren += 1
                 elif(stng[inx]==")"):
                     paren -= 1
+                elif(stng[inx]=="<"):
+                    meta += 1
+                elif(stng[inx]==">"):
+                    meta -= 1
                 inx += 1
         if(len(stng)>0):
             bits.append(stng)
@@ -1940,7 +2027,7 @@ class Inst(SCModule):
                     self.release = self.mdl
                 else:
                     if(not self.mdl.done()):
-                        self.release = Multiply(self.mdl, Const(LinInterp(Val(1),Val(0),self.parent.rel_time),1),False)
+                        self.release = Multiply(self.mdl, Const(LinInterp(Val(1),Val(0),self.parent.rel_time),1,loop=False),False)
                     else:
                         self.release = Const(LinInterp(StereoVal([self.last[0],self.last[1]]),Val(0),self.parent.rel_time),1)
                 self.stopped = True
@@ -2481,6 +2568,54 @@ class Invert(SCModule):
     def set_freq(self, freq):
         self.mdl.set_freq(freq)
 
+class AbsVal(SCModule):
+    """ Module for absolute value.
+
+    """
+
+    def __init__(self, mdl):
+        """ Initializer.
+
+            Arguments:
+            mdl -- Input module.
+        """
+
+        self.mdl = mdl
+
+    def step(self, delta, const=-1):
+        self.mdl.step(delta, const)
+
+    def read(self,tails=False,stereo=True,signal=True):
+        val = self.mdl.read(tails,stereo,signal)
+        if(stereo):
+            return [abs(val[0]),abs(val[1])]
+        else:
+            return abs(val)
+
+    def step_tails(self, delta, const=-1):
+        self.mdl.step_tails(delta, const)
+
+    def reset(self):
+        self.mdl.reset()
+
+    def clear(self):
+        self.mdl.clear()
+
+    def done(self):
+        return self.mdl.done()
+
+    def get_extra(self):
+        return self.mdl.get_extra()
+
+    def clone(self):
+        return AbsVal(self.mdl.clone())
+
+    def length(self):
+        return self.mdl.length()
+
+    def set_freq(self, freq):
+        self.mdl.set_freq(freq)
+
 class Level(SCModule):
     """ Module for setting the volume of a module.
 
@@ -2682,7 +2817,7 @@ class Const(SCModule):
 
     """
 
-    def __init__(self, mdl, frameslice, rate=1, loop=True):
+    def __init__(self, mdl, frameslice, rate=1, loop=False, atk=0, rels=-1):
         """ Initializer.
 
             Arguments:
@@ -2692,22 +2827,44 @@ class Const(SCModule):
             rate -- Playback rate. 1 is in time with song steps; 2 is twice as
                     fast; 0.5 half, etc.
             loop -- Whether to loop the module once it's finished.
+            atk -- Attack point (for looping).
+            rels -- Release point (for looping). -1 for no release point.
         """
 
         self.mdl = mdl
         self.rate = rate*frameslice
         self.frameslice = frameslice
         self.loop = loop
+        self.attack = atk
+        self.release = rels
+        self.cur = 0
+        self.stopped = False
 
     def step(self, delta, const=-1):
         if(const == STOP or const == RELEASE):
             self.mdl.step(0,const)
+            self.stopped = True
         elif(const == ADJUST):
+            self.cur += delta
             self.mdl.step(delta, ADJUST)
         else:
             if(const == DELTA):
                 const = delta
             self.mdl.step(const*self.rate,const)
+
+            self.cur += const*self.rate
+            if(self.release > 0):
+                if(not self.stopped and self.cur >= self.release):
+                    self.cur %= self.release
+                    self.cur += self.attack
+                    self.mdl.reset()
+                    self.mdl.step(self.cur,ADJUST)
+
+            if(self.loop and self.mdl.done() and not self.stopped):
+                extra = self.mdl.get_extra()
+                extra += self.attack
+                self.mdl.reset()
+                self.mdl.step(extra,ADJUST)
 
     def read(self,tails=False,stereo=True,signal=True):
         return self.mdl.read(tails,stereo,signal)
@@ -2720,9 +2877,13 @@ class Const(SCModule):
     def reset(self):
         if(self.loop):
             self.mdl.reset()
+            self.mdl.step(self.attack,ADJUST)
+            self.cur = self.attack
 
     def clear(self):
         self.mdl.clear()
+        self.cur = 0
+        self.stopped = False
 
     def done(self):
         return self.mdl.done()
@@ -2734,8 +2895,10 @@ class Const(SCModule):
         return self.mdl.length()/self.rate
 
     def clone(self):
-        tmp = Const(self.mdl.clone(), 1, 1, self.loop)
+        tmp = Const(self.mdl.clone(), 1, 1, self.loop, self.attack, self.release)
         tmp.rate = self.rate
+        tmp.cur = self.cur
+        tmp.stopped = self.stopped
         return tmp
 
     def set_freq(self, freq):
@@ -3208,27 +3371,128 @@ class Subtract(SCModule):
         self.a.set_freq(freq)
         self.b.set_freq(freq)
 
+class Modulus(SCModule):
+    """ Module that performs modulus on two inputs.
+    """
+
+    def __init__(self, a, b, alead=True):
+        """ Initializer.
+
+            Arguments:
+            a -- Input A, the numerator.
+            b -- Input B, the denominator.
+            alead -- If true, we stop when A stops; otherwise, when B stops.
+        """
+
+        self.a = a
+        self.b = b
+        self.a_lead = alead
+
+    def step(self, delta, const=-1):
+        self.a.step(delta, const)
+        self.b.step(delta, const)
+        if(self.a_lead):
+            if(self.b.done() and not self.a.done()):
+                extra = self.b.get_extra()
+                self.b.reset()
+                self.b.step(extra,ADJUST)
+        else:
+            if(self.a.done() and not self.b.done()):
+                extra = self.a.get_extra()
+                self.a.reset()
+                self.a.step(extra,ADJUST)
+
+    def read(self,tails=False,stereo=True,signal=True):
+        valA = self.a.read(tails,stereo,signal)
+        valB = self.b.read(tails,stereo,signal)
+        if(stereo):
+            return [valA[0]%valB[0],valA[1]%valB[1]]
+        else:
+            return valA%valB
+
+    def step_tails(self, delta, const=-1):
+        self.a.step_tails(delta,const)
+        self.b.step_tails(delta,const)
+
+    def reset(self):
+        self.a.reset()
+        self.b.reset()
+
+    def clear(self):
+        self.a.clear()
+        self.b.clear()
+
+    def done(self):
+        if(self.a_lead):
+            return self.a.done()
+        else:
+            return self.b.done()
+
+    def get_extra(self):
+        if(self.a_lead):
+            return self.a.get_extra()
+        else:
+            return self.b.get_extra()
+
+    def clone(self):
+        return Modulus(self.a.clone(), self.b.clone(), self.a_lead)
+
+    def length(self):
+        if(self.a_lead):
+            return self.a.length()
+        else:
+            return self.b.length()
+
+    def set_freq(self, freq):
+        self.a.set_freq(freq)
+        self.b.set_freq(freq)
+
 class Repeat(SCModule):
     """ Module that loops an input a given number of times.
     """
 
-    def __init__(self, mdl, x):
+    def __init__(self, mdl, x, atk=0, rels=-1):
         """ Initializer.
 
             Arguments:
             mdl -- Input module.
             x -- The number of times to repeat.
+            atk -- The attack point (before this will only be played initially)
+            rels -- The release point (after this will only play on the last round, or after RELEASE/STOP; -1 for no release point)
         """
 
         self.a = mdl
         self.b = x
         self.resets = 1
+        self.attack = atk
+        self.release = rels
+        self.cur = 0
+        self.stopped = False
 
     def step(self, delta, const=-1):
         self.a.step(delta, const)
+        self.b.step(delta, const)
+        self.cur += delta
+        if(const == STOP or const == RELEASE):
+            self.stopped = True
+
+        if(self.b.done() and not self.done()):
+            extra = self.b.get_extra()
+            self.b.reset()
+            self.b.step(extra,ADJUST)
+
         reps = self.b.read(stereo=False,signal=False)
-        if(self.a.done() and (reps < 0 or self.resets < reps)):
+        if(self.release > 0):
+            while((not self.stopped and (reps < 0 or self.resets < reps)) and self.cur >= self.release):
+                self.cur %= self.release
+                self.cur += self.attack
+                self.a.reset()
+                self.a.step(self.cur,ADJUST)
+                self.resets += 1
+        while(self.a.done() and (reps < 0 or self.resets < reps)):
             extra = self.a.get_extra()
+            extra += self.attack
+            self.cur = extra
             self.a.reset()
             self.a.step(extra,ADJUST)
             self.resets += 1
@@ -3241,11 +3505,15 @@ class Repeat(SCModule):
 
     def reset(self):
         self.a.reset()
+        self.a.step(self.attack,ADJUST)
         self.resets = 1
+        self.cur = self.attack
 
     def clear(self):
         self.a.clear()
         self.resets = 1
+        self.cur = 0
+        self.stopped = False
 
     def done(self):
         return self.a.done()
@@ -3254,8 +3522,10 @@ class Repeat(SCModule):
         return self.a.get_extra()
 
     def clone(self):
-        tmp = Repeat(self.a.clone(), self.b.clone())
+        tmp = Repeat(self.a.clone(), self.b.clone(), self.attack, self.release)
         tmp.resets = self.resets
+        tmp.cur = self.cur
+        tmp.stopped = self.stopped
         return tmp
 
     def length(self):
@@ -3442,6 +3712,263 @@ class Length(SCModule):
         tmp = Length(self.a.clone(),self.b.clone())
         tmp.cur = self.cur
         return tmp
+
+class Limit(SCModule):
+    """ Module that applys smoothing to the input signal.
+        0 is no smoothing & does not affect signal.
+        9 (or -9) is infinite smoothing (signal will not move).
+    """
+
+    def __init__(self, a, b, alead=True, knee=Val(0)):
+        """ Initializer.
+
+            Arguments:
+            a -- Input module.
+            b -- Clip module
+            knee -- Knee module.
+            alead -- If true, we stop when A stops; otherwise, when B stops.
+        """
+
+        self.a = a
+        self.b = b
+        self.knee = knee
+        self.a_lead = alead
+
+    def step(self, delta, const=-1):
+        self.a.step(delta, const)
+        self.b.step(delta, const)
+        self.knee.step(delta, const)
+        if(self.a_lead):
+            if(self.b.done() and not self.a.done()):
+                extra = self.b.get_extra()
+                self.b.reset()
+                self.b.step(extra,ADJUST)
+        else:
+            if(self.a.done() and not self.b.done()):
+                extra = self.a.get_extra()
+                self.a.reset()
+                self.a.step(extra,ADJUST)
+        if(self.knee.done()):
+            extra = self.knee.get_extra()
+            self.knee.reset()
+            self.knee.step(extra,ADJUST)
+
+    def read(self,tails=False,stereo=True,signal=True):
+        valA = self.a.read(tails,stereo,signal)
+        valB = self.b.read(tails,stereo,signal)
+        knee = self.knee.read(tails,stereo,signal)
+
+        if(stereo):
+            if(abs(valA[0])>(abs(valB[0])-abs(knee[0]))):
+                valA[0] = self.limit(valA[0],valB[0],knee[0])
+            if(abs(valA[1])>(abs(valB[1])-abs(knee[1]))):
+                valA[1] = self.limit(valA[1],valB[1],knee[1])
+            return valA
+        else:
+            if(abs(valA)>(abs(valB)-abs(knee))):
+                valA = self.limit(valA,valB,knee)
+            return valA
+
+    def limit(self,inp,clp,kne):
+        sign = 1
+        if(inp < 0):
+            sign = -1
+        inp = abs(inp)
+        clp = abs(clp)
+        kne = abs(kne)
+        if(kne == 0):
+            return sign*clp
+        return sign*(kne*(1-(1/((1/kne)*(inp+kne-clp)+1)))+(clp-kne))
+
+    def step_tails(self, delta, const=-1):
+        self.a.step_tails(delta,const)
+        self.b.step_tails(delta,const)
+        self.knee.step_tails(delta,const)
+
+    def reset(self):
+        self.a.reset()
+        self.b.reset()
+        self.knee.reset()
+
+    def clear(self):
+        self.a.clear()
+        self.b.clear()
+        self.knee.clear()
+
+    def done(self):
+        if(self.a_lead):
+            return self.a.done()
+        else:
+            return self.b.done()
+
+    def get_extra(self):
+        if(self.a_lead):
+            return self.a.get_extra()
+        else:
+            return self.b.get_extra()
+
+    def clone(self):
+        cln = Limit(self.a.clone(), self.b.clone(), self.a_lead, self.knee.clone())
+        return cln
+
+    def length(self):
+        if(self.a_lead):
+            return self.a.length()
+        else:
+            return self.b.length()
+
+    def set_freq(self, freq):
+        self.a.set_freq(freq)
+        self.b.set_freq(freq)
+        self.knee.set_freq(freq)
+
+class Attack(SCModule):
+    """ Module for setting an attack looping point.
+        Whenever this module loops, it will adjust its input module
+        forward by the Attack value.
+    """
+
+    def __init__(self, mdl, attk):
+        """ Initializer.
+
+            Arguments:
+            mdl -- The input module.
+            attk -- The attack value module.
+        """
+
+        self.a = mdl
+        self.b = attk
+
+    def step(self, delta, const=-1):
+        self.a.step(delta, const)
+        self.b.step(delta, const)
+
+        if(self.b.done()):
+            extra = self.b.get_extra()
+            self.b.reset()
+            self.b.step(extra, ADJUST)
+
+    def read(self,tails=False,stereo=True,signal=True):
+        val = self.a.read(tails,stereo,signal)
+        if(stereo):
+            return [-val[0],-val[1]]
+        else:
+            return -val
+
+    def step_tails(self, delta, const=-1):
+        self.a.step_tails(delta, const)
+
+    def reset(self):
+        self.a.reset()
+        self.a.step(self.b.read(stereo=False,signal=False),ADJUST)
+
+    def clear(self):
+        self.a.clear()
+        self.b.clear()
+
+    def done(self):
+        return self.a.done()
+
+    def get_extra(self):
+        return self.a.get_extra()
+
+    def clone(self):
+        return Attack(self.a.clone(),self.b.clone())
+
+    def length(self):
+        return self.a.length()
+
+    def set_freq(self, freq):
+        self.a.set_freq(freq)
+        self.b.set_freq(freq)
+
+class Release(SCModule):
+    """ Module for setting an release looping point.
+        If this module has not been stopped by RELEASE, it will
+        halt its input module at the given release point.
+
+        A value of -1 indicates no release point.
+    """
+
+    def __init__(self, mdl, rel):
+        """ Initializer.
+
+            Arguments:
+            mdl -- The input module.
+            rel -- The attack value module.
+        """
+
+        self.a = mdl
+        self.b = rel
+        self.last_rel = -1
+        self.cur = 0
+        self.stopped = False
+
+    def step(self, delta, const=-1):
+        self.b.step(delta,const)
+        if(self.b.done() and not self.done()):
+            extra = self.b.get_extra()
+            self.b.reset()
+            self.b.step(extra,ADJUST)
+
+        self.last_rel = self.b.read(stereo=False,signal=False)
+        if(const == STOP or const == RELEASE):
+            self.stopped = True
+            self.a.step(delta,const)
+        elif(const == ADJUST):
+            self.a.step(delta,const)
+            self.cur += delta
+        else:
+            if(self.stopped or self.cur < self.last_rel or self.last_rel <= 0):
+                self.a.step(delta,const)
+                self.cur += delta
+            else:
+                extra = self.cur - self.last_rel
+                self.a.reset()
+                self.a.step(extra,ADJUST)
+                self.cur = extra
+
+    def read(self,tails=False,stereo=True,signal=True):
+        val = self.a.read(tails,stereo,signal)
+        if(stereo):
+            return [-val[0],-val[1]]
+        else:
+            return -val
+
+    def step_tails(self, delta, const=-1):
+        self.a.step_tails(delta, const)
+        self.b.step_tails(delta, const)
+
+    def reset(self):
+        self.a.reset()
+        self.cur = 0
+
+    def clear(self):
+        self.a.clear()
+        self.b.clear()
+        self.last_rel = -1
+        self.stopped = False
+        self.cur = 0
+
+    def done(self):
+        return self.a.done()
+
+    def get_extra(self):
+        return self.a.get_extra()
+
+    def clone(self):
+        rl = Release(self.a.clone(),self.b.clone())
+        rl.cur = self.cur
+        rl.last_rel = self.last_rel
+        rl.stopped = self.stopped
+        return rl
+
+    def length(self):
+        return self.a.length()
+
+    def set_freq(self, freq):
+        self.a.set_freq(freq)
+        self.b.set_freq(freq)
 
 
 def gcd(a, b):

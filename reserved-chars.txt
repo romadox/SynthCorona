@@ -1,0 +1,40 @@
+   ===*=== SYNTH-CORONA ===*===
+     === RESERVED LETTERS ===
+
+a - (A-flat)
+b - (B-flat)
+c - Constant rate
+d - (D-flat)
+e - (E-flat)
+f - 
+g - (G-flat)
+h - 
+i - Interpolation
+j - Release Point
+k - AttacK Point
+l - Level (volume control)
+m - LiMit
+n - LeNgth
+o - 
+p -
+q - 
+r - Repeat
+s - Speed
+t - AbsoluTe Value
+u - 
+v - EnVelope
+w -
+x - Cross operation
+y -
+z -
+
+Other Symbols
++ - Addition
+- - Subtraction
+* - Multiplication
+/ - Division
+% - Modulus
+[] - Pattern
+() - Series
+{} - Set
+<> - Meta
