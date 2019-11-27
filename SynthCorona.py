@@ -1066,7 +1066,7 @@ class SynthCorona:
         # the rate value for a Const module.
         const = -1
         # If const != -1, this indicates whether our Const module should loop.
-        cloop = True
+        cloop = False
         # Attack value for constant module
         catk = 0
         # Release value for constant module
@@ -2781,12 +2781,16 @@ class Envelope(SCModule):
         self.b.step_tails(const*self.rate, const)
 
     def reset(self):
-        if(self.loop):
-            self.a.reset()
-            self.b.reset()
-            self.b.step(self.attack,ADJUST)
-            self.cur = self.attack
-
+        #if(self.loop):
+        #    self.a.reset()
+        #    self.b.reset()
+        #    self.b.step(self.attack,ADJUST)
+        #    self.cur = self.attack
+        self.a.reset()
+        self.b.reset()
+        self.b.step(self.attack,ADJUST)
+        self.cur = self.attack
+        
     def clear(self):
         self.a.clear()
         self.b.clear()
@@ -2875,10 +2879,14 @@ class Const(SCModule):
         self.mdl.step_tails(const*self.rate,const)
 
     def reset(self):
-        if(self.loop):
-            self.mdl.reset()
-            self.mdl.step(self.attack,ADJUST)
-            self.cur = self.attack
+        #if(self.loop):
+        #    self.mdl.reset()
+        #    self.mdl.step(self.attack,ADJUST)
+        #    self.cur = self.attack
+        # making loop auto-loop only...
+        self.mdl.reset()
+        self.mdl.step(self.attack,ADJUST)
+        self.cur = self.attack
 
     def clear(self):
         self.mdl.clear()
@@ -2897,6 +2905,7 @@ class Const(SCModule):
     def clone(self):
         tmp = Const(self.mdl.clone(), 1, 1, self.loop, self.attack, self.release)
         tmp.rate = self.rate
+        tmp.frameslice = self.frameslice
         tmp.cur = self.cur
         tmp.stopped = self.stopped
         return tmp
