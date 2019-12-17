@@ -4,7 +4,7 @@
     modular design which can be applied to instruments, pitches, sequences,
     and patterns.
 
-    Version 1.2.0
+    Version 1.2.2
 
 """
 
@@ -184,6 +184,11 @@ class SCModule:
         """
         raise NotImplementedException()
 
+    def has_tails(self):
+        """ Checks if any nested Sequences have sustaining notes.
+        """
+        raise NotImplementedException()
+    
     def get_extra(self):
         """ If the module is done, reports how much time we have advanced after
             finishing.
@@ -1650,6 +1655,10 @@ class SeqLine(SCModule):
     def done(self):
         return self.curInx >= len(self.pat)
 
+    def has_tails(self):
+        # SeqLine does not deal with tails
+        return False
+    
     def get_extra(self):
         if(self.done()):
             return self.cur
@@ -1788,6 +1797,9 @@ class Sequence(SCModule):
         else:
             return len(self.tails) == 0
 
+    def has_tails(self):
+        return len(self.tails) > 0
+
     def get_extra(self):
         return self.lines[0].get_extra()
 
@@ -1856,6 +1868,9 @@ class SeqBlock(SCModule):
     def done(self):
         return self.module.done()
 
+    def has_tails(self):
+        return self.module.has_tails()
+
     def get_extra(self):
         return self.module.get_extra()
 
@@ -1889,7 +1904,7 @@ class Song(SCModule):
         # Step Sequences that are sustaining (self.tails)
         for t in self.tails:
             t.step_tails(delta, const)
-            if(t.done()):
+            if(t.done() and not t.has_tails()):
                 self.tails.remove(t)
         if(self.curInx < len(self.pat)):
             self.pat[self.curInx].step(delta,delta)
@@ -1940,6 +1955,9 @@ class Song(SCModule):
     def done(self):
         return len(self.tails) == 0 and (self.curInx >= len(self.pat))
 
+    def has_tails(self):
+        return len(self.tails) > 0
+    
     def get_extra(self):
         return self.curInx-len(self.pat)
 
@@ -2098,6 +2116,9 @@ class Inst(SCModule):
         else:
             return self.mdl.done()
 
+    def has_tails(self):
+        return False # maybe? or should we do self.stopped and not self.release.done()?
+
     def get_extra(self):
         if(self.stopped):
             return self.release.get_extra()
@@ -2160,6 +2181,9 @@ class Val(SCModule):
     def done(self):
         return self.cur >= self.len
 
+    def has_tails(self):
+        return False
+    
     def get_extra(self):
         if(self.done()):
             return self.cur-self.len
@@ -2223,6 +2247,9 @@ class StereoVal(SCModule):
     def done(self):
         return self.cur >= self.len
 
+    def has_tails(self):
+        return False
+    
     def get_extra(self):
         if(self.done()):
             return self.cur-self.len
@@ -2326,6 +2353,12 @@ class Pattern(SCModule):
     def done(self):
         return self.curInx>=len(self.pat)
 
+    def has_tails(self):
+        for m in self.pat:
+            if(m.has_tails()):
+                return True
+        return False
+    
     def get_extra(self):
         if(self.done()):
             return self.extra
@@ -2411,6 +2444,12 @@ class Set(SCModule):
     def done(self):
         return self.curMod.done()
 
+    def has_tails(self):
+        for m in self.set:
+            if(m.has_tails()):
+                return True
+        return False
+    
     def get_extra(self):
         return self.curMod.get_extra()
 
@@ -2501,6 +2540,12 @@ class Series(SCModule):
     def done(self):
         return self.srs[self.curInx].done()
 
+    def has_tails(self):
+        for m in self.srs:
+            if(m.has_tails()):
+                return True
+        return False
+    
     def get_extra(self):
         return self.srs[self.curInx].get_extra()
 
@@ -2556,6 +2601,9 @@ class Invert(SCModule):
     def done(self):
         return self.mdl.done()
 
+    def has_tails(self):
+        return self.mdl.has_tails()
+    
     def get_extra(self):
         return self.mdl.get_extra()
 
@@ -2603,6 +2651,9 @@ class AbsVal(SCModule):
 
     def done(self):
         return self.mdl.done()
+
+    def has_tails(self):
+        return self.mdl.has_tails()
 
     def get_extra(self):
         return self.mdl.get_extra()
@@ -2676,6 +2727,9 @@ class Level(SCModule):
         else:
             return self.b.done()
 
+    def has_tails(self):
+        return self.a.has_tails()
+        
     def get_extra(self):
         if(self.a_lead):
             return self.a.get_extra()
@@ -2800,6 +2854,9 @@ class Envelope(SCModule):
     def done(self):
         return self.b.done()
 
+    def has_tails(self):
+        return self.a.has_tails()
+
     def get_extra(self):
         return self.b.get_extra()#/self.rate
 
@@ -2896,6 +2953,9 @@ class Const(SCModule):
     def done(self):
         return self.mdl.done()
 
+    def has_tails(self):
+        return self.mdl.has_tails()
+
     def get_extra(self):
         return self.mdl.get_extra()#/self.rate
 
@@ -2977,6 +3037,9 @@ class Speed(SCModule):
             return self.mdl.done()
         else:
             return self.rate.done()
+
+    def has_tails(self):
+        return self.mdl.has_tails()
 
     def get_extra(self):
         if(self.a_lead):
@@ -3062,6 +3125,9 @@ class LinInterp(SCModule):
     def done(self):
         return self.cur >= self.width
 
+    def has_tails(self):
+        return False
+    
     def get_extra(self):
         if(self.done()):
             return self.cur-self.width
@@ -3137,6 +3203,9 @@ class Multiply(SCModule):
         else:
             return self.b.done()
 
+    def has_tails(self):
+        return self.a.has_tails() or self.b.has_tails()
+        
     def get_extra(self):
         if(self.a_lead):
             return self.a.get_extra()
@@ -3212,6 +3281,9 @@ class Divide(SCModule):
         else:
             return self.b.done()
 
+    def has_tails(self):
+        return self.a.has_tails() or self.b.has_tails()
+        
     def get_extra(self):
         if(self.a_lead):
             return self.a.get_extra()
@@ -3285,6 +3357,9 @@ class Add(SCModule):
         else:
             return self.b.done()
 
+    def has_tails(self):
+        return self.a.has_tails() or self.b.has_tails()
+        
     def get_extra(self):
         if(self.a_lead):
             return self.a.get_extra()
@@ -3361,6 +3436,9 @@ class Subtract(SCModule):
         else:
             return self.b.done()
 
+    def has_tails(self):
+        return self.a.has_tails() or self.b.has_tails()
+
     def get_extra(self):
         if(self.a_lead):
             return self.a.get_extra()
@@ -3436,6 +3514,9 @@ class Modulus(SCModule):
             return self.a.done()
         else:
             return self.b.done()
+
+    def has_tails(self):
+        return self.a.has_tails() or self.b.has_tails()
 
     def get_extra(self):
         if(self.a_lead):
@@ -3526,6 +3607,9 @@ class Repeat(SCModule):
 
     def done(self):
         return self.a.done()
+
+    def has_tails(self):
+        return self.a.has_tails()
 
     def get_extra(self):
         return self.a.get_extra()
@@ -3627,6 +3711,9 @@ class Cross(SCModule):
     def done(self):
         return self.cur >= self.len
 
+    def has_tails(self):
+        return self.op.has_tails()
+
     def get_extra(self):
         if(self.done()):
             return self.cur-self.len
@@ -3703,6 +3790,9 @@ class Length(SCModule):
 
     def done(self):
         return self.cur >= self.b.read(stereo=False)
+
+    def has_tails(self):
+        return False
 
     def get_extra(self):
         if(self.done()):
@@ -3810,6 +3900,9 @@ class Limit(SCModule):
         else:
             return self.b.done()
 
+    def has_tails(self):
+        return self.a.has_tails()
+
     def get_extra(self):
         if(self.a_lead):
             return self.a.get_extra()
@@ -3877,6 +3970,9 @@ class Attack(SCModule):
 
     def done(self):
         return self.a.done()
+
+    def has_tails(self):
+        return self.a.has_tails()
 
     def get_extra(self):
         return self.a.get_extra()
@@ -3962,6 +4058,9 @@ class Release(SCModule):
     def done(self):
         return self.a.done()
 
+    def has_tails(self):
+        return self.a.has_tails()
+    
     def get_extra(self):
         return self.a.get_extra()
 
