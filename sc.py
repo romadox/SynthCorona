@@ -9,7 +9,7 @@ else:
     print("                musical typewriter                ")
     print()
     print("                  by: Nash High                   ")
-    print("                  version: 1.2.2                  ")
+    print("                  version: 1.2.3                  ")
     print("\n\n\n\n\n\n\n\n\n")
     stng = input("Enter the path to the song file, or drag it in: ")
 inx = stng.rfind("\\")

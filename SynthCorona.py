@@ -498,7 +498,7 @@ class SynthCorona:
                                 # Parse wave period
                                 if(mt.startswith(("period", "PERIOD", "prd", "PRD"))):
                                     mt = mt.split("=")[1].lstrip()
-                                    period = int(mt)
+                                    period = float(mt)
                                 # Parse looping property (T/F)
                                 elif(mt.startswith(("loop", "LOOP", "l", "L"))):
                                     mt = mt.split("=")[1].lstrip()
