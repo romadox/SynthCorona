@@ -4,7 +4,7 @@
     modular design which can be applied to instruments, pitches, sequences,
     and patterns.
 
-    Version 1.2.2
+    Version 1.2.3
 
 """
 
@@ -3813,9 +3813,25 @@ class Length(SCModule):
         return tmp
 
 class Limit(SCModule):
-    """ Module that applys smoothing to the input signal.
-        0 is no smoothing & does not affect signal.
-        9 (or -9) is infinite smoothing (signal will not move).
+    """ Module that limits (clips) the input signal to a given value.
+        Along with the input module and clipping module, Limit also has
+        a knee module (supplied via meta tags), which can create a buffer
+        area for soft clipping.
+
+        As an example, "Am6" will limit the signal provided by module "A"
+        to 6, and all values above that will be hard-clipped to 6.
+
+        However, "Am<KNEE=2>6" will soft limit "A" to 6, with values above
+        4 (the limit, 6, minus the knee, 2) being reduced by the following 
+        equation:
+
+        Where "x" is signal value, "k" is knee, and "m" is limit.
+
+        f(x) = k(1-(1/((1/k)(x+k-m)+1))) + (m-k)
+
+        In this function, f(x) = (m-k) when x = (m-k),
+        and f(x) approaches m as x approaches infinity
+        (so the signal always falls beneath the limit).
     """
 
     def __init__(self, a, b, alead=True, knee=Val(0)):
