@@ -4,7 +4,7 @@
     modular design which can be applied to instruments, pitches, sequences,
     and patterns.
 
-    Version 1.2.3
+    Version 1.3.0
 
 """
 
@@ -241,11 +241,12 @@ class SynthCorona:
         """
 
         self.path = ""
+        self.srcname = ""
         self.cfg = dict()
         self.insts = dict()
         self.modules = dict()
         self.seqs = dict()
-        self.song = None
+        self.songs = []
         self.tones = self.buildTones()
         self.freqs = self.buildFreqs()
 
@@ -314,6 +315,7 @@ class SynthCorona:
         if(fldr < 0):
             fldr = 0
         self.path = filename[0:fldr+1]
+        self.srcname = filename[fldr+1:len(filename)].split(".")[0]
 
         # The SC file text, split into lines.
         text = open(filename).read()
@@ -340,7 +342,9 @@ class SynthCorona:
         seqPan = None
         # The individual lines of a Sequence.
         seqLines = []
-        # Holds each Sequence-level module in the song. We will
+        # File name for current song. Empty string will use source name.
+        songName = ""
+        # Holds each Sequence-level module in the current song. We will
         # add new modules to this for each line under the SNG header.
         songSteps = []
 
@@ -424,13 +428,20 @@ class SynthCorona:
                     state = BLK
                 # Song Header
                 elif(line.startswith(("SNG", "sng"))):
+                    songSteps = []
+                    songName = ""
                     state = SNG
                     self.curParseModule = "SONG"
                     line = line[3:len(line)].lstrip()
-                    if(line.startswith(":")):
-                        line = line[1:len(line)].lstrip()
+                    
+                    if(":" in line):
+                        songName = line.split(":")
+                        songName, line = songName[0].strip(), songName[1].strip()
+                        
                     if(len(line)>0 and not line.isspace()):
                         self.parseSongLine(line, songSteps)
+                        if(i+1>=len(text) or text[i+1][0:3] in HEADERS):
+                            self.songs.append(Song(songSteps,self,songName))
                 # If line doesn't start with Header string, parse based on state
                 else:
                     # Configuration Chunk
@@ -451,10 +462,6 @@ class SynthCorona:
                         elif(line.startswith(("DEPTH", "depth"))):
                             line = line.split(":")[1].strip()
                             self.depth=int(line)
-                        # Sets the song name
-                        elif(line.startswith(("NAME","TITLE","name","title"))):
-                            line = line.split(":")[1].strip()
-                            self.name=line
                         # Sets the song to Stereo Mode
                         elif(line.startswith(("STEREO","stereo"))):
                             self.stereo = True
@@ -474,6 +481,9 @@ class SynthCorona:
                     elif(state == SNG):
                         if(len(line)>0 and not line.isspace()):
                             self.parseSongLine(line, songSteps)
+                        if(i+1>=len(text) or text[i+1][0:3] in HEADERS):
+                            print("Adding song.")
+                            self.songs.append(Song(songSteps,self,songName))   
                     # Instrument / Module chunk
                     elif(state == INS or state == MDL):
                         # Separate the module name / description
@@ -655,129 +665,177 @@ class SynthCorona:
                 # add the current Sequence to self.seqs
                 if(i+1>=len(text) or text[i+1][0:3] in HEADERS):
                     self.seqs[seqName] = Sequence(seqLines, self, seqPan)
-        self.song = Song(songSteps,self)
+            elif(state == SNG):
+                # Current line is blank, but similarly to above, we are checking
+                # to see if it is the end of a Song chunk & if so
+                # add the current Song to self.songs
+                if(i+1>=len(text) or text[i+1][0:3] in HEADERS):
+                    self.songs.append(Song(songSteps,self,songName))
 
-    def render(self, filename):
+    def render(self, filepath=None):
         """ Renders the Song into a Wave file.
 
             Arguments:
-            filename -- The path of the output file.
+            filepath -- File path to render to. Defaults to same path as src file
         """
 
-        # Take note of the time before we begin.
-        startTime = time.clock()
-        # Create our output file.
-        out = wave.open(filename, 'wb')
+        # Take note of current time; to use for the whole batch.
+        totalStartTime = time.clock()
+            
+        if(filepath == None):
+            filepath = self.path
 
-        # Set the number of channels in output file.
-        if(self.stereo):
-            out.setnchannels(2)
-        else:
-            out.setnchannels(1)
-        # Set sample width (in bytes)
-        out.setsampwidth(int(self.depth/8))
-        # Set sample rate
-        out.setframerate(self.rate)
-        # Note song length (for process monitoring)
-        # ** Depending on modules in the song, this might not be accurate. **
-        len = self.song.length()
-        # Print song size info
-        print("Song Duration: " + str(int(len/self.rate*100)/100))
-        print("Song Sample Length: " + str(len))
-        # Total number of samples we have processed so far.
-        samps = 0
-        # Process chunk counter for whether we should update progress info
-        count = 0
-        # List of rendered frames.
-        frames = []
-        # List of pre-normalized frames.
-        prenorm = []
-        # Current peak value (for normalization)
-        peak = 0
-        # Value of the last read sample. (We use this after the render loop
-        # to add decay, so it can't be declared within the loop.)
-        dec = -1
-        # Maximum signal absolute value
-        maxI = 2**(self.depth-1)-1
-        # Express max as a ratio of parser MAX_VAL; to save computations
-        max = maxI / MAX_VAL
-        # Number of bytes in audio file depth.
-        bytes = int(self.depth/8)
-        # Whether WAV values are signed or unsigned
-        sgned = bytes!=1
-
-        # Main render loop
-        while(not self.song.done()):
-            # Read & Render next sample for stereo songs
-            if(self.stereo):
-                dec = self.song.read(stereo=True,signal=True)
-                # Render without normalizing
-                if(not self.normalize):
-                    valL = int(max*limit(dec[0]))
-                    valR = int(max*limit(dec[1]))
-                    if(bytes == 1):
-                        valL += maxI
-                        valR += maxI
-                    valL = valL.to_bytes(bytes, byteorder="little", signed=sgned)
-                    valR = valR.to_bytes(bytes, byteorder="little", signed=sgned)
-                    frames.append(valL)
-                    frames.append(valR)
-                # Normalize ON -- read frame & prepare for normalizing
-                else:
-                    if(abs(dec[0])>peak):
-                        peak = abs(dec[0])
-                    if(abs(dec[1])>peak):
-                        peak = abs(dec[1])
-                    prenorm.append(dec)
-            # Render the next sample for mono songs.
+        if(len(self.songs) > 1):
+            print("Rendering " + str(len(self.songs)) + " songs.")
+        sngcount = 0
+        for song in self.songs:
+            sngcount += 1
+            
+            # Take note of the time before we begin.
+            startTime = time.clock()
+            # Open our output file.
+            if(song.name == ""):
+                fname = self.srcname + ".wav"
             else:
-                dec = self.song.read(stereo=False,signal=True)
-                # Render without normalizing
-                if(not self.normalize):
-                    val = int(max*limit(dec))
-                    if(bytes == 1):
-                        val += maxI
-                    val = val.to_bytes(bytes, byteorder="little", signed=sgned)
-                    frames.append(val)
-                # Normalize ON -- Read sample & prepare for normalization
-                else:
-                    if(abs(dec)>peak):
-                        peak = abs(dec)
-                    prenorm.append(dec)
-            self.song.step(1)
-            count += 1
-            samps += 1
+                fname = song.name + ".wav"
+            print("RENDERING SONG " + str(sngcount) + "/" + str(len(self.songs)) + ": " + fname)
+            out = wave.open(filepath + fname, 'wb')
 
-            # Every 512 frames, update progress counter.
-            if(count > 512):
-                elp = time.clock()-startTime
-                sys.stdout.write("\r")
-                ppct = samps/len
-                sys.stdout.write("PROGRESS: " + '{:>5}'.format(str(int(ppct*10000)/100)))
-                sys.stdout.write(" : RATE: " + '{:>9}'.format(str(int(samps/elp*100)/100)))
-                sys.stdout.write(" : [")
-                i = -0.015
-                while(i < 1):
-                    i += 0.05
-                    if(ppct >= i):
-                        sys.stdout.write("*")
-                    else:
-                        sys.stdout.write(" ")
-                sys.stdout.write("]")
-                sys.stdout.flush()
-                count = 0
-        # If we're normalizing, we need to scale everything now that we know
-        # the final peak value
-        if(self.normalize):
-            # Calculate ratio between peak value & signal maximum
-            # All frames will be scaled by this
-            rtio = (MAX_VAL * 0.9999) / peak
-            for sp in prenorm:
-                # Normalize & render for stereo songs
+            # Set the number of channels in output file.
+            if(self.stereo):
+                out.setnchannels(2)
+            else:
+                out.setnchannels(1)
+            # Set sample width (in bytes)
+            out.setsampwidth(int(self.depth/8))
+            # Set sample rate
+            out.setframerate(self.rate)
+            # Note song length (for process monitoring)
+            # ** Depending on modules in the song, this might not be accurate. **
+            snglen = song.length()
+            # Print song size info
+            print("Song Duration: " + str(int(snglen/self.rate*100)/100))
+            print("Song Sample Length: " + str(snglen))
+            # Total number of samples we have processed so far.
+            samps = 0
+            # Process chunk counter for whether we should update progress info
+            count = 0
+            # List of rendered frames.
+            frames = []
+            # List of pre-normalized frames.
+            prenorm = []
+            # Current peak value (for normalization)
+            peak = 0
+            # Value of the last read sample. (We use this after the render loop
+            # to add decay, so it can't be declared within the loop.)
+            dec = -1
+            # Maximum signal absolute value
+            maxI = 2**(self.depth-1)-1
+            # Express max as a ratio of parser MAX_VAL; to save computations
+            max = maxI / MAX_VAL
+            # Number of bytes in audio file depth.
+            bytes = int(self.depth/8)
+            # Whether WAV values are signed or unsigned
+            sgned = bytes!=1
+
+            # Main render loop
+            while(not song.done()):
+                # Read & Render next sample for stereo songs
                 if(self.stereo):
-                    dec = [sp[0]*rtio,sp[1]*rtio]
-                    valL = int(dec[0]*max)
-                    valR = int(dec[1]*max)
+                    dec = song.read(stereo=True,signal=True)
+                    # Render without normalizing
+                    if(not self.normalize):
+                        valL = int(max*limit(dec[0]))
+                        valR = int(max*limit(dec[1]))
+                        if(bytes == 1):
+                            valL += maxI
+                            valR += maxI
+                        valL = valL.to_bytes(bytes, byteorder="little", signed=sgned)
+                        valR = valR.to_bytes(bytes, byteorder="little", signed=sgned)
+                        frames.append(valL)
+                        frames.append(valR)
+                    # Normalize ON -- read frame & prepare for normalizing
+                    else:
+                        if(abs(dec[0])>peak):
+                            peak = abs(dec[0])
+                        if(abs(dec[1])>peak):
+                            peak = abs(dec[1])
+                        prenorm.append(dec)
+                # Render the next sample for mono songs.
+                else:
+                    dec = song.read(stereo=False,signal=True)
+                    # Render without normalizing
+                    if(not self.normalize):
+                        val = int(max*limit(dec))
+                        if(bytes == 1):
+                            val += maxI
+                        val = val.to_bytes(bytes, byteorder="little", signed=sgned)
+                        frames.append(val)
+                    # Normalize ON -- Read sample & prepare for normalization
+                    else:
+                        if(abs(dec)>peak):
+                            peak = abs(dec)
+                        prenorm.append(dec)
+                song.step(1)
+                count += 1
+                samps += 1
+
+                # Every 512 frames, update progress counter.
+                if(count > 512):
+                    elp = time.clock()-startTime
+                    sys.stdout.write("\r")
+                    ppct = samps/snglen
+                    sys.stdout.write("PROGRESS: " + '{:>5}'.format(str(int(ppct*10000)/100)))
+                    sys.stdout.write(" : RATE: " + '{:>9}'.format(str(int(samps/elp*100)/100)))
+                    sys.stdout.write(" : [")
+                    i = -0.015
+                    while(i < 1):
+                        i += 0.05
+                        if(ppct >= i):
+                            sys.stdout.write("*")
+                        else:
+                            sys.stdout.write(" ")
+                    sys.stdout.write("]")
+                    sys.stdout.flush()
+                    count = 0
+            # If we're normalizing, we need to scale everything now that we know
+            # the final peak value
+            if(self.normalize):
+                # Calculate ratio between peak value & signal maximum
+                # All frames will be scaled by this
+                rtio = (MAX_VAL * 0.9999) / peak
+                for sp in prenorm:
+                    # Normalize & render for stereo songs
+                    if(self.stereo):
+                        dec = [sp[0]*rtio,sp[1]*rtio]
+                        valL = int(dec[0]*max)
+                        valR = int(dec[1]*max)
+                        if(bytes == 1):
+                            valL += maxI
+                            valR += maxI
+                        valL = valL.to_bytes(bytes, byteorder="little", signed=sgned)
+                        valR = valR.to_bytes(bytes, byteorder="little", signed=sgned)
+                        frames.append(valL)
+                        frames.append(valR)
+                    # Normalize & render for mono songs
+                    else:
+                        dec = sp*rtio
+                        val = int(dec*max)
+                        if(bytes == 1):
+                            val += maxI
+                        val = val.to_bytes(bytes, byteorder="little", signed=sgned)
+                        frames.append(val)
+            # Add a bit of decay to the end of the song, to avoid popping.
+            # Decay time, in samples
+            decay = int(0.001*self.rate)
+            for i in range(decay):
+                # Scalar to fade the sample out as i approaches decay.
+                tmp = 1-(i/decay)
+                # Calculate & render decay for stereo songs
+                if(self.stereo):
+                    tmp = [dec[0]*tmp,dec[1]*tmp]
+                    valL = int(max*tmp[0])
+                    valR = int(max*tmp[1])
                     if(bytes == 1):
                         valL += maxI
                         valR += maxI
@@ -785,61 +843,38 @@ class SynthCorona:
                     valR = valR.to_bytes(bytes, byteorder="little", signed=sgned)
                     frames.append(valL)
                     frames.append(valR)
-                # Normalize & render for mono songs
+                # Calculate & render decay for mono songs
                 else:
-                    dec = sp*rtio
-                    val = int(dec*max)
+                    tmp *= dec
+                    val = int(max*dec)
                     if(bytes == 1):
                         val += maxI
                     val = val.to_bytes(bytes, byteorder="little", signed=sgned)
                     frames.append(val)
-        # Add a bit of decay to the end of the song, to avoid popping.
-        # Decay time, in samples
-        decay = int(0.001*self.rate)
-        for i in range(decay):
-            # Scalar to fade the sample out as i approaches decay.
-            tmp = 1-(i/decay)
-            # Calculate & render decay for stereo songs
-            if(self.stereo):
-                tmp = [dec[0]*tmp,dec[1]*tmp]
-                valL = int(max*tmp[0])
-                valR = int(max*tmp[1])
-                if(bytes == 1):
-                    valL += maxI
-                    valR += maxI
-                valL = valL.to_bytes(bytes, byteorder="little", signed=sgned)
-                valR = valR.to_bytes(bytes, byteorder="little", signed=sgned)
-                frames.append(valL)
-                frames.append(valR)
-            # Calculate & render decay for mono songs
-            else:
-                tmp *= dec
-                val = int(max*dec)
-                if(bytes == 1):
-                    val += maxI
-                val = val.to_bytes(bytes, byteorder="little", signed=sgned)
-                frames.append(val)
 
-        # One last update to progress printouts -- so we end on 100%.
-        sys.stdout.write("\r")
-        ppct = samps/len
-        sys.stdout.write("PROGRESS: " + '{:>5}'.format(str(int(ppct*10000)/100)))
-        sys.stdout.write(" : RATE: " + '{:>9}'.format(str(int(samps/elp*100)/100)))
-        sys.stdout.write(" : [")
-        i = -0.015
-        while(i < 1):
-            i += 0.05
-            sys.stdout.write("*")
-        sys.stdout.write("]")
-        sys.stdout.flush()
+            # One last update to progress printouts -- so we end on 100%.
+            sys.stdout.write("\r")
+            ppct = samps/snglen
+            sys.stdout.write("PROGRESS: " + '{:>5}'.format(str(int(ppct*10000)/100)))
+            sys.stdout.write(" : RATE: " + '{:>9}'.format(str(int(samps/elp*100)/100)))
+            sys.stdout.write(" : [")
+            i = -0.015
+            while(i < 1):
+                i += 0.05
+                sys.stdout.write("*")
+            sys.stdout.write("]")
+            sys.stdout.flush()
 
-        # Write all rendered samples to the WAV file & close it.
-        out.writeframes(b''.join(frames))
-        out.close()
+            # Write all rendered samples to the WAV file & close it.
+            out.writeframes(b''.join(frames))
+            out.close()
 
-        # We're done! Print how long it took.
-        renderTime = time.clock()-startTime
-        print("\nRENDER TIME: " + str(int(renderTime*100)/100) + "                        ")
+            # We're done! Print how long it took.
+            renderTime = time.clock()-startTime
+            print("\nSONG RENDER TIME: " + str(int(renderTime*100)/100) + "                        ")
+        print("BATCH COMPLETE!")
+        renderTime = time.clock()-totalStartTime
+        print("TOTAL RENDER TIME: " + str(int(renderTime*100)/100))
 
     def parseModule(self, stng, type, line=0):
         """ Parses a SynthCorona module from a string.
@@ -1887,14 +1922,17 @@ class Song(SCModule):
         are run and read one after the other.
     """
 
-    def __init__(self, pat, parent):
+    def __init__(self, pat, parent, name=""):
         """ Initializer.
 
             Arguments:
             pat -- Sequence pattern that comprises the Song.
             parent -- SynthCorona that is running this show.
+            name -- Name to render this Song under. Empty string will use
+                    the name from the source file.
         """
 
+        self.name = name
         self.pat = pat
         self.curInx = 0
         self.parent = parent
