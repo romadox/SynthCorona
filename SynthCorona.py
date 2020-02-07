@@ -363,7 +363,7 @@ class SynthCorona:
                     line = line[4:len(line)].strip()
                     if(line.find("\\")<0 and line.find("/")<0):
                         line = self.path + line
-                        print(line)
+                        print("IMPORTING: " + line)
                     tmp = SynthCorona()
                     try:
                         tmp.parse(line)
@@ -482,7 +482,6 @@ class SynthCorona:
                         if(len(line)>0 and not line.isspace()):
                             self.parseSongLine(line, songSteps)
                         if(i+1>=len(text) or text[i+1][0:3] in HEADERS):
-                            print("Adding song.")
                             self.songs.append(Song(songSteps,self,songName))   
                     # Instrument / Module chunk
                     elif(state == INS or state == MDL):
@@ -715,7 +714,7 @@ class SynthCorona:
             snglen = song.length()
             # Print song size info
             print("Song Duration: " + str(int(snglen/self.rate*100)/100))
-            print("Song Sample Length: " + str(snglen))
+            print("Song Sample Length: " + str(int(snglen)+1))
             # Total number of samples we have processed so far.
             samps = 0
             # Process chunk counter for whether we should update progress info
