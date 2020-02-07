@@ -338,9 +338,8 @@ describes a different Sequence).
 <h2>VIII. The Song Chunk</h2>
 
 The Song chunk is where you will arrange Sequences into an overall song.
-Only one Song per file is permitted. Song blocks begin with the "SNG"
-header, then a series of Sequence names, separated by commas. This can be
-on one line or multiple lines:
+Song chunks begin with the "SNG" header, then a series of Sequence names, separated by commas.
+This can be on one line or multiple lines:
 
       SNG A, B, A, C
 
@@ -348,6 +347,26 @@ on one line or multiple lines:
 
       SNG
       A,B,A,C
+
+By default, a song will have the same name as the source code file (so "my-song.sc" renders to
+"my-song.wav"). However, you can set a specific name by adding a colon like this:
+
+      SNG my-song2: A,B,A,C
+      
+Here, the colon is separating the "SNG" header and the song name, "my-song2", from the arrangement
+"A,B,A,C". The colon is necessary, otherwise Synth-Corona will assume you are arranging the song,
+instead of naming it.
+
+Additionally, you can render multiple songs from one Synth-Corona file by simply adding more SNG
+chunks:
+
+      SNG my-song: A,B,A,C
+      SNG my-song2:
+      Ar2,B,C
+      SNG my-song3: B,A,C
+      
+(Note that if there are two unnamed Song chunks, they will both default to the source name, so the
+second one will overwrite the first!)
 
 As with Instrument patterns and Pitches, you may use operators to customize
 your song:
