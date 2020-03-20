@@ -70,7 +70,7 @@ operators.
 You can use the same name for an Instrument and a Sequence, but obviously
 not the same name for two of the same kind.
 
-Here are the current reserved characters: <code>+-*/%rixlvcstnjk{}[]()\<>.,|</code>
+Here are the current reserved characters: <code>+-*/%rixlvcstnmjk{}[]()\<>.,|</code>
 
 <h2>V. Operators</h2>
 
@@ -96,6 +96,7 @@ creating your song.
         c    |   Constant    | Run A with Song Steps, not freq  |     cA
         s    |   Speed       | Run A at Bx speed (as a ratio)   |     AsB
         n    |   Length      | Set the duration of A to B.      |     AnB
+        m    |   Limit       | Limits |A| to |B|.               |     AmB
         t    |   Absolute Val| Returns absolute value of A.     |     tA
         k    |   Attack Pt.  | Set looping Attack point         |     AkB
         j    |   Release Pt. | Set looping Release point        |     AjB
@@ -203,6 +204,13 @@ these two patterns is is different with and without Cross:
 </li>
 <li>
 The Repeat module also supports ATTACK and RELEASE. These work similar to how they do in Envelope and Const, except that Repeat will also play past the Release point on its final repetition, even if the instrument has not been released yet.
+</li>
+<li>
+The Limit module has an optional KNEE property, which will smooth values below the limit. This is set with a meta-tag:
+
+      WAVEm<KNEE=2>7
+
+In this example, we are limiting WAVE to values between -7 and 7, and setting a KNEE size of 2, which means that values above 5 (7 minus 2) will be smoothed out, to soften the clipping somewhat. You can also link to another module in the KNEE field, for dynamic knee values.
 </li>
 </ul>
 <h2>VI. Instruments</h2>
