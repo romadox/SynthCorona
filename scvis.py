@@ -75,7 +75,7 @@ for ky in kys:
     draw = ImageDraw.Draw(img)
     if(freq <= 0):
         inst.set_freq(1)
-        len = int(inst.length()*reps)/(inst.rate/inst.period)
+        len = int(inst.period*reps)/inst.rate
     else:
         inst.set_freq(freq)
         len = int(inst.length()*reps)
