@@ -3,7 +3,8 @@
 
 Synth-Corona is a code language for creating chiptunes from scratch in your favorite
 mono-space text editor. It features a highly modular design, allowing a wide range 
-of control over sounds, pitch, panning, sequences, and song structure.
+of control over sounds, pitch, panning, sequences, and song structure. The name 
+is a reference to Smith-Corona typewriters.
 
 The renderer script parses Synth-Corona code into a WAV audio file.
 
@@ -222,8 +223,8 @@ Instruments are described with a name, metadata, and a definition:
 
 Above, <code>A</code> is the instrument name, <code>\<prd=7></code> indicates that the wave period
 of this instrument is 7 steps, to the right of the colon is the definition.
-This particular instance creates a Pattern, which makes something like a
-blocky saw wave.
+This particular instance creates a Set, which draws numbers from the list randomly, to create
+a blocky noise wave.
 
 The ":" separates the name side from the definition and is required.
 
@@ -408,6 +409,6 @@ different files, you can import other files using the "IMP" header:
 
       IMP /wherever/your/file/is/file.txt
 
-Importing like this will load all instruments and patters into the current
+Importing like this will load all instruments and patterns into the current
 file, under their original names. Generally, putting IMP statements at the
 beginning of the file is best, to prevent overwriting your other stuff.
