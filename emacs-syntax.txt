@@ -1,0 +1,30 @@
+;; NASH CUSTOM STUFF BELOW HERE!
+(defconst my-sc-mode-syntax-table
+  (let ((table (make-syntax-table)))
+    (modify-syntax-entry ?/ "_ 12" table)
+    (modify-syntax-entry ?\n ">" table)
+
+    (modify-syntax-entry ?< "(" table)
+    (modify-syntax-entry ?> ")" table)
+    (modify-syntax-entry ?, "." table)
+    table))
+
+  
+  (setq mysc-highlights
+     '(("IMP\\|CFG\\|MDL\\|INS\\|SEQ\\|BLK\\|PAT\\|SNG" . font-lock-builtin-face)
+      ("\\<[A-Ga-g][b# ]?[1234567890]\\|[A-Z]*=\\|TEMPO\\|BEAT\\|DEPTH\\|RATE\\|NORMALIZE\\|NORM\\|STEREO\\|MONO" . font-lock-keyword-face)
+      ("[a-z+*/%|:-]" . font-lock-function-name-face)
+      ("[A-Z][A-Z1234567890_]*" . font-lock-variable-name-face)
+      ("[1234567890.]*" . font-lock-constant-face)
+      ))
+
+  (define-derived-mode sc-mode prog-mode "Synth-Corona Mode"
+    :syntax-table my-sc-mode-syntax-table
+    (setq font-lock-defaults '(mysc-highlights))
+    (font-lock-fontify-buffer))
+
+(setq auto-mode-alist
+  (append
+    ;; File name ends in ‘.sc’.
+    '(("\\.sc\\'" . sc-mode))
+    auto-mode-alist))

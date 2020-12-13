@@ -16,7 +16,7 @@ l - Level (volume control)
 m - LiMit
 n - LeNgth
 o - 
-p -
+p - Pitch shift
 q - 
 r - Repeat
 s - Speed
@@ -25,7 +25,7 @@ u -
 v - EnVelope
 w -
 x - Cross operation
-y -
+y - Delay
 z -
 
 Other Symbols

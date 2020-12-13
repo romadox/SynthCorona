@@ -19,9 +19,9 @@ import sys, random, time
 HEADERS = {"CFG", "INS", "MDL", "SEQ", "PAT", "BLK", "SNG", "IMP"}
 # Reserved symbols (which cannot be used in names)
 # Note: Names can contain numbers, but they cannot begin with a number.
-RESERVED = "+-*/%rixlvcsnmtjk{}[]()<>.,|"
+RESERVED = "+-*/%rixlvcsnmtjkpy{}[]()<>.,|"
 # List of operators
-OPERATORS = "+-=*/%rixlvsnmtjk"
+OPERATORS = "+-=*/%rixlvsnmtjkpy"
 # Rendering chunk size -- atm, only determines how often progress label
 # is updated (in samples).
 CHUNK = 1028*1
@@ -210,15 +210,32 @@ class SCModule:
         """
         raise NotImplementedException()
 
-    def set_freq(self,freq):
-        """ For Instruments, sets the current frequency.
+    # This is being replaced with set_pitch, which will express pitch in cents, not hz;
+    # We will add up all pitch shifts & calculate frequency on the fly in Inst.
+    #
+    #def set_freq(self,freq):
+    #    """ For Instruments, sets the current frequency.
+    #
+    #        Since Instruments are often nested within other modules, this
+    #        must be a module function, so they can pass the frequency along
+    #        to any Insts they may contain.
+    #
+    #        Arguments:
+    #        freq -- The frequency (in Hz)
+    #    """
+    #    raise NotImplementedException()
 
-            Since Instruments are often nested within other modules, this
-            must be a module function, so they can pass the frequency along
-            to any Insts they may contain.
+    def set_pitch(self, pitch):
+        """ Sets the pitch of this module. This applies to Instruments, who determine
+            their playback speed with it, as well as Sequences, for whom it represents
+            an overall pitch-shift value, which will be added to the instruments' pitch.
+
+            For other modules, they will likely need to pass this pitch along
+            to relevant nested modules, in order to apply it properly to child Instruments
+            or Sequences.
 
             Arguments:
-            freq -- The frequency (in Hz)
+            pitch -- The pitch/pitch shift amount (in cents, floating point)
         """
         raise NotImplementedException()
 
@@ -248,7 +265,8 @@ class SynthCorona:
         self.seqs = dict()
         self.songs = []
         self.tones = self.buildTones()
-        self.freqs = self.buildFreqs()
+        # see def buildFreqs for explanation
+        #self.freqs = self.buildFreqs()
 
         self.tempo = 120
         self.stereo = True
@@ -286,16 +304,19 @@ class SynthCorona:
                 ky[nm] = (12*oct+dvals[inx])*100
         return ky
 
-    def buildFreqs(self):
-        """ Builds a list of pre-baked frequencies for each cent in the 10 octaves
-            of the tones array. When pitches are read in SC, we will access the
-            corresponding index of this array, rather than calculating on the fly.
-        """
+    # Currently not going to do this. It's a little slower, but for maximum pitch-shift-ability,
+    # we are going to calculate frequency on the fly instead of pre-baking.
+    #
+    #def buildFreqs(self):
+    #    """ Builds a list of pre-baked frequencies for each cent in the 10 octaves
+    #        of the tones array. When pitches are read in SC, we will access the
+    #        corresponding index of this array, rather than calculating on the fly.
+    #    """
 
-        freqs = []
-        for i in range(12000):
-            freqs.append(calc_freq(i-self.tones["A4"]))
-        return freqs
+    #    freqs = []
+    #    for i in range(12000):
+    #        freqs.append(calc_freq(i-self.tones["A4"]))
+    #    return freqs
 
     def parse(self, filename):
         """ Parses the SC file at filename and loads its information into this
@@ -439,7 +460,7 @@ class SynthCorona:
                         songName, line = songName[0].strip(), songName[1].strip()
                         
                     if(len(line)>0 and not line.isspace()):
-                        self.parseSongLine(line, songSteps)
+                        self.parseSongLine(line, songSteps,i)
                         if(i+1>=len(text) or text[i+1][0:3] in HEADERS):
                             self.songs.append(Song(songSteps,self,songName))
                 # If line doesn't start with Header string, parse based on state
@@ -480,7 +501,7 @@ class SynthCorona:
                     # Song chunk
                     elif(state == SNG):
                         if(len(line)>0 and not line.isspace()):
-                            self.parseSongLine(line, songSteps)
+                            self.parseSongLine(line, songSteps,i)
                         if(i+1>=len(text) or text[i+1][0:3] in HEADERS):
                             self.songs.append(Song(songSteps,self,songName))   
                     # Instrument / Module chunk
@@ -908,18 +929,59 @@ class SynthCorona:
         while(stng != "" and not stng.isspace()):
             # Whether modA needs to be wrapped in a Cross module.
             cross = False
+            # Constant-rate indicator. -1 means skip; Any positive value is read as
+            # the rate value for a Const module.
+            const = -1
+            # If const != -1, this indicates whether our Const module should loop.
+            cloop = False
+            # Attack value for constant module
+            catk = 0
+            # Release value for constant module
+            crels = -1
             # The operator string
             op = stng.lstrip()[0]
             stng = stng[1:len(stng)].lstrip()
 
+            if(op == "c"):
+                op = stng[0]
+                stng = stng[1:len(stng)].lstrip()
+                const = 1                
+                # Const currently offers 4 meta tags:
+                #     RATE, R - Playback rate modifier
+                #     LOOP, L - Whether to loop the module
+                #     ATK - Looping attack point
+                #     REL - Looping release point
+                if(len(stng)>0 and stng[0] == "<"):
+                    meta = self.parseMeta(stng,line)
+                    meta, stng = meta[0], meta[1]
+                    #meta = meta[1:len(meta)-1].strip().split(",")
+                    for mt in meta:
+                        if(mt.startswith(("REL","rel"))):
+                            mt = mt.split("=")[1].strip()
+                            crels = float(mt)
+                            if(crels == None or crels <= 0):
+                                crels = -1
+                        elif(mt.startswith(("R", "r", "RATE", "rate"))):
+                            const = float(mt.split("=")[1])
+                            if(const == None or const < 1):
+                                const = 1
+                        elif(mt.startswith(("L", "l", "LOOP", "loop"))):
+                            mt = mt.split("=")[1].strip()
+                            cloop = mt.startswith(("T","t","1"))
+                        elif(mt.startswith(("ATK","atk","ATTACK","attack"))):
+                            mt = mt.split("=")[1].strip()
+                            catk = float(mt)
+                            if(catk == None or catk < 0):
+                                catk = 0
+                                
             # x indicates a Cross module; flag Cross & carry on
             if(op == "x"):
                 op = stng[0]
                 stng = stng[1:len(stng)].lstrip()
                 cross = True
-
+            
             # Separate out any meta data for the given operation.
-            meta = self.parseMeta(stng)
+            meta = self.parseMeta(stng,line)
             meta, stng = meta[0], meta[1]
 
             # Pop the second operand.
@@ -985,14 +1047,30 @@ class SynthCorona:
                 modA = Modulus(modA, mdl)
             # i indicates Interpolation.
             elif(op == "i"):
-                width = 1
+                width = Val(1)
                 for mt in meta:
                     # Width is the duration of the interpolation.
                     if(mt.startswith(("WID", "WIDTH", "w", "W"))):
                         mt = mt.split("=")[1]
-                        width = float(mt)
-                        if(width == None or width <= 0):
-                            width = 1
+                        if(mt in self.modules):
+                            width = self.modules[mt].clone()
+                        elif(mt != "" and (mt[0].isnumeric() or mt[0]=="." or mt[0]=="-")):
+                            invert = False
+                            if(mt.startswith("-")):
+                                invert = True
+                                mt = mt[1:len(mt)]
+                            num = ""
+                            while(len(mt)>0 and (mt[0].isnumeric() or mt[0] == ".")):
+                                num = num + mt[0]
+                                mt = mt[1:len(mt)]
+                            num = float(num)
+                            width = Val(num)
+                            if(invert):
+                                width = Invert(width)
+                        #mt = mt.split("=")[1]
+                        #width = float(mt)
+                        #if(width == None or width <= 0):
+                        #    width = 1
                 modA = LinInterp(modA, mdl, width)
             # l indicates Level/Volume. 0 is silent, 9 is max, -x is inverted.
             elif(op == "l"):
@@ -1070,28 +1148,92 @@ class SynthCorona:
                             if(invert):
                                 knee = Invert(knee)
                 modA = Limit(modA, mdl, alead, knee)
-
+            elif(op == "y"):
+                wet = Val(1)
+                dry = Val(1)
+                fdbk = Val(0)
+                for mt in meta:
+                    if(mt.startswith(("WET","wet"))):
+                        mt = mt.split("=")[1]
+                        if(mt in self.modules):
+                            wet = self.modules[mt].clone()
+                        elif(mt != "" and (mt[0].isnumeric() or mt[0]=="." or mt[0]=="-")):
+                            invert = False
+                            if(mt.startswith("-")):
+                                invert = True
+                                mt = mt[1:len(mt)]
+                            num = ""
+                            while(len(mt)>0 and (mt[0].isnumeric() or mt[0] == ".")):
+                                num = num + mt[0]
+                                mt = mt[1:len(mt)]
+                            num = float(num)
+                            wet = Val(num)
+                            if(invert):
+                                wet = Invert(wet)            
+                    elif(mt.startswith(("DRY","dry"))):
+                        mt = mt.split("=")[1]
+                        if(mt in self.modules):
+                            dry = self.modules[mt].clone()
+                        elif(mt != "" and (mt[0].isnumeric() or mt[0]=="." or mt[0]=="-")):
+                            invert = False
+                            if(mt.startswith("-")):
+                                invert = True
+                                mt = mt[1:len(mt)]
+                            num = ""
+                            while(len(mt)>0 and (mt[0].isnumeric() or mt[0] == ".")):
+                                num = num + mt[0]
+                                mt = mt[1:len(mt)]
+                            num = float(num)
+                            dry = Val(num)
+                            if(invert):
+                                dry = Invert(knee)
+                    elif(mt.startswith(("FEEDBACK","FDBK","feedback","fdbk","FD","fd"))):
+                        mt = mt.split("=")[1]
+                        if(mt in self.modules):
+                            fdbk = self.modules[mt].clone()
+                        elif(mt != "" and (mt[0].isnumeric() or mt[0]=="." or mt[0]=="-")):
+                            invert = False
+                            if(mt.startswith("-")):
+                                invert = True
+                                mt = mt[1:len(mt)]
+                            num = ""
+                            while(len(mt)>0 and (mt[0].isnumeric() or mt[0] == ".")):
+                                num = num + mt[0]
+                                mt = mt[1:len(mt)]
+                            num = float(num)
+                            fdbk = Val(num)
+                            if(invert):
+                                fdbk = Invert(fdbk)
+                fpstp = (60*self.rate)/(self.tempo*self.beat)
+                modA = Delay(modA,mdl,fpstp,fdbk,wet,dry)
+            elif(op == "p"):
+                alead = True
+                for mt in meta:
+                    if(mt.startswith(("LEAD","LD","lead","ld"))):
+                        mt = mt.split("=")[1]
+                        alead = not (mt.startswith("B") or mt.startswith("b"))
+                modA = Pitch(modA, mdl, alead)
+                                 
             # If we need to, wrap the operation module in a Cross module.
             if(cross):
                 modA = Cross(modA)
+                # If we need to, wrap the operation module in a Const module.
+            if(const>0):
+                modA = Const(modA,(self.tempo*self.beat)/(60*self.rate),const,cloop,catk,crels)
         return modA
 
     def popModule(self, stng, type, line=0):
         """ 'Pops' the first fully-described module off the front of the given
             string and parses it.
-
             This method handles parsing of all modules except binary operators,
             which are handled by parseModule(). Given a string describing a
             binary operation, this method will parse the first operand.
-
             This method is called by parseModule() & is mostly intended to reduce
             code repetition within that method.
-
             Keyword arguments:
             stng -- String containing the full module description.
             type -- Tells us what this module is for. Options: INST, TONE, SEQN, MDLE.
             line -- Current parser line; for error reporting.
-
             Returns a 2-tuple: (parsed first module, remaining string).
         """
 
@@ -1272,8 +1414,8 @@ class SynthCorona:
             modA = Const(modA,(self.tempo*self.beat)/(60*self.rate),const,cloop,catk,crels)
 
         return (modA, stng)
-
-    def parseMeta(self, stng):
+    
+    def parseMeta(self, stng, line=0):
         """ Separates out individual meta tags from a meta description.
 
             Tags must be delimited by commas.
@@ -1291,7 +1433,7 @@ class SynthCorona:
         if(stng[0] == "<"):
             endmeta = stng.find(">")
             if(endmeta<0):
-                raise SCParseError("Missing '>' in meta tag.",i)
+                raise SCParseError("Missing '>' in meta tag.",line)
             meta = stng[1:endmeta]
             stng = stng[endmeta+1:len(stng)]
             meta = meta.strip().split(",")
@@ -1397,10 +1539,11 @@ class SynthCorona:
         brace = 0
         bracket = 0
         paren = 0
+        meta = 0
         inx = 0
         while(inx < len(stng)):
             if(stng[inx]=="," and brace == 0
-                    and bracket == 0 and paren == 0):
+                    and bracket == 0 and paren == 0 and meta == 0):
                 bits.append(stng[0:inx])
                 stng = stng[inx+1:len(stng)]
                 inx = 0
@@ -1417,6 +1560,10 @@ class SynthCorona:
                     paren += 1
                 elif(stng[inx]==")"):
                     paren -= 1
+                elif(stng[inx]=="<"):
+                    meta += 1
+                elif(stng[inx]==">"):
+                    meta -= 1
                 inx += 1
         if(len(stng)>0):
             bits.append(stng)
@@ -1574,6 +1721,7 @@ class SynthCorona:
             ary.append(self.parseModule(ln.strip(), type, line))
         return Series(ary)
 
+
 class SeqLine(SCModule):
     """ Represents a single line of a Sequence module.
 
@@ -1583,7 +1731,7 @@ class SeqLine(SCModule):
         a piece, though different Instruments can be used in the same SeqLine.
     """
 
-    def __init__(self, parent, pitch, pat, pan=None):
+    def __init__(self, parent, pitch, pat, pan=None, transpose=0):
         """ Initializes with the given parent and pitch module and the given
             pattern.
 
@@ -1596,12 +1744,14 @@ class SeqLine(SCModule):
             pitch -- Pitch module.
             pat -- Pattern data list.
             pan -- Pan module. Defaults to Val(0) (centered) if none is given.
+            transpose -- Pitch transposition amount.
         """
 
         self.parent = parent
         self.seq = None
         self.pat = pat
         self.pitch = pitch
+        self.transpose = 0
         self.pan = pan
         if(self.pan == None):
             self.pan = Val(0)
@@ -1647,9 +1797,15 @@ class SeqLine(SCModule):
                 self.pan.reset()
                 self.pan.step(extra,ADJUST)
             if(self.curInst != None):
-                freq = self.parent.freqs[int(self.pitch.read(stereo=False,signal=False))]
-                if(self.curInst.freq != freq):
-                    self.curInst.set_freq(freq)
+                # old baked-freqs route
+                #freq = self.parent.freqs[int(self.pitch.read(stereo=False,signal=False))]
+                #if(self.curInst.freq != freq):
+                #    self.curInst.set_freq(freq)
+                
+                # new pitch-only route
+                pitch = self.pitch.read(stereo=False,signal=False)+self.transpose
+                if(self.curInst.pitch != pitch):
+                   self.curInst.set_pitch(pitch)
                 return pan(self.curInst.read(),self.pan.read(stereo=False,signal=False))
             else:
                 return [0,0]
@@ -1659,9 +1815,15 @@ class SeqLine(SCModule):
                 self.pitch.reset()
                 self.pitch.step(extra,ADJUST)
             if(self.curInst != None):
-                freq = self.parent.freqs[int(self.pitch.read(stereo=False,signal=False))]
-                if(self.curInst.freq != freq):
-                    self.curInst.set_freq(freq)
+                # old baked-freqs route
+                #freq = self.parent.freqs[int(self.pitch.read(stereo=False,signal=False))]
+                #if(self.curInst.freq != freq):
+                #    self.curInst.set_freq(freq)
+
+                # new pitch-only route
+                pitch = self.pitch.read(stereo=False,signal=False)+self.transpose
+                self.curInst.set_pitch(pitch)
+                
                 return self.curInst.read(stereo=False,signal=False)
             else:
                 return 0
@@ -1692,6 +1854,10 @@ class SeqLine(SCModule):
     def has_tails(self):
         # SeqLine does not deal with tails
         return False
+
+    def set_pitch(self,pitch):
+        # this sets the transposition amount, not the pitch module
+        self.transpose = pitch
     
     def get_extra(self):
         if(self.done()):
@@ -1709,7 +1875,7 @@ class SeqLine(SCModule):
                 patclone.append(p.clone())
             else:
                 patclone.append(p)
-        return SeqLine(self.parent, self.pitch.clone(), patclone, self.pan.clone())
+        return SeqLine(self.parent, self.pitch.clone(), patclone, self.pan.clone(),self.transpose)
 
     def to_string(self):
         """ Compiles and returns a string representing this SeqLine.
@@ -1727,13 +1893,14 @@ class Sequence(SCModule):
         of a SC file.
     """
 
-    def __init__(self, lines, parent, pan=None):
+    def __init__(self, lines, parent, pan=None, pitch=0):
         """ Initializer.
 
             Arguments:
             lines -- The SeqLines that comprise this Sequence.
             parent -- The SynthCorona parent.
             pan -- Option panning module (pans the whole pattern).
+            pitch -- Optional pitch shift value (not a module)
         """
 
         self.parent = parent
@@ -1741,6 +1908,7 @@ class Sequence(SCModule):
         self.pan = pan
         if(self.pan == None):
             self.pan = Val(0)
+        self.pitch = pitch
         self.stopped = False
         self.len = 0
         for l in lines:
@@ -1834,6 +2002,13 @@ class Sequence(SCModule):
     def has_tails(self):
         return len(self.tails) > 0
 
+    def set_pitch(self, pitch):
+        if(pitch != self.pitch):
+            self.pitch = pitch
+            # Sequence tells its SeqLines what transpose value to have
+            for l in self.lines:
+                l.set_pitch(pitch)
+
     def get_extra(self):
         return self.lines[0].get_extra()
 
@@ -1851,7 +2026,7 @@ class Sequence(SCModule):
         tlines = []
         for l in self.lines:
             tlines.append(l.clone())
-        return Sequence(tlines, self.parent, self.pan.clone())
+        return Sequence(tlines, self.parent, self.pan.clone(), self.pitch)
 
 class SeqBlock(SCModule):
     """ Sequence wrapper for modules. When Sequence modules are parsed by the
@@ -1904,6 +2079,9 @@ class SeqBlock(SCModule):
 
     def has_tails(self):
         return self.module.has_tails()
+
+    def set_pitch(self, pitch):
+        self.module.set_pitch(pitch)
 
     def get_extra(self):
         return self.module.get_extra()
@@ -2057,13 +2235,20 @@ class Inst(SCModule):
         if(self.pan == None):
             self.pan = Val(0)
         self.rate = 0
-        self.freq = 1
+        self.pitch = 0
+        # replacing frequency with pitch
+        #self.freq = 1
         self.last = 0
 
-    def set_freq(self, freq):
-        self.freq = freq
-        self.rate = self.freq*self.period/self.parent.rate
-        self.mdl.set_freq(freq)
+    #def set_freq(self, freq):
+    #    self.freq = freq
+    #    self.rate = self.freq*self.period/self.parent.rate
+    #    self.mdl.set_freq(freq)
+    def set_pitch(self, pitch):
+        if(pitch != self.pitch):
+            self.pitch = pitch
+            self.rate = calc_freq(self.pitch)*self.period/self.parent.rate
+        self.mdl.set_pitch(pitch)
 
     def step(self, delta, const=-1):
         if(const < 0):
@@ -2082,9 +2267,9 @@ class Inst(SCModule):
                     self.release = self.mdl
                 else:
                     if(not self.mdl.done()):
-                        self.release = Multiply(self.mdl, Const(LinInterp(Val(1),Val(0),self.parent.rel_time),1,loop=False),False)
+                        self.release = Multiply(self.mdl, Const(LinInterp(Val(1),Val(0),Val(self.parent.rel_time)),1,loop=False),False)
                     else:
-                        self.release = Const(LinInterp(StereoVal([self.last[0],self.last[1]]),Val(0),self.parent.rel_time),1)
+                        self.release = Const(LinInterp(StereoVal([self.last[0],self.last[1]]),Val(0),Val(self.parent.rel_time)),1)
                 self.stopped = True
                 return
             # release command -- pass this forward to our module
@@ -2170,7 +2355,8 @@ class Inst(SCModule):
         else:
             cp.release = None
         cp.rate = self.rate
-        cp.freq = self.freq
+        #cp.freq = self.freq
+        cp.pitch = self.pitch
         return cp
 
     def length(self):
@@ -2235,7 +2421,9 @@ class Val(SCModule):
     def length(self):
         return self.len
 
-    def set_freq(self, freq):
+    #def set_freq(self, freq):
+    #    pass
+    def set_pitch(self, pitch):
         pass
 
 class StereoVal(SCModule):
@@ -2301,7 +2489,9 @@ class StereoVal(SCModule):
     def length(self):
         return self.len
 
-    def set_freq(self, freq):
+    #def set_freq(self, freq):
+    #    pass
+    def set_pitch(self, pitch):
         pass
 
 class Pattern(SCModule):
@@ -2417,9 +2607,13 @@ class Pattern(SCModule):
             sum += p.length()
         return sum
 
-    def set_freq(self, freq):
+    #def set_freq(self, freq):
+    #    for p in self.pat:
+    #        p.set_freq(freq)
+
+    def set_pitch(self, pitch):
         for p in self.pat:
-            p.set_freq(freq)
+            p.set_pitch(pitch)
 
 class Set(SCModule):
     """ Module for selecting random modules from a set.
@@ -2501,9 +2695,13 @@ class Set(SCModule):
     def length(self):
         return self.curMod.length()
 
-    def set_freq(self, freq):
+    #def set_freq(self, freq):
+    #    for m in self.set:
+    #        m.set_freq(freq)
+
+    def set_pitch(self, pitch):
         for m in self.set:
-            m.set_freq(freq)
+            m.set_pitch(pitch)
 
 class Series(SCModule):
     """ Module for playing a series of modules as part of a longer pattern.
@@ -2597,9 +2795,13 @@ class Series(SCModule):
     def length(self):
         return self.srs[self.curInx].length()
 
-    def set_freq(self, freq):
+    #def set_freq(self, freq):
+    #    for s in self.srs:
+    #        s.set_freq(freq)
+
+    def set_pitch(self, pitch):
         for s in self.srs:
-            s.set_freq(freq)
+            s.set_pitch(pitch)
 
 class Invert(SCModule):
     """ Module for negation.
@@ -2650,8 +2852,11 @@ class Invert(SCModule):
     def length(self):
         return self.mdl.length()
 
-    def set_freq(self, freq):
-        self.mdl.set_freq(freq)
+    #def set_freq(self, freq):
+    #    self.mdl.set_freq(freq)
+
+    def set_pitch(self, pitch):
+        self.mdl.set_pitch(pitch)
 
 class AbsVal(SCModule):
     """ Module for absolute value.
@@ -2701,8 +2906,11 @@ class AbsVal(SCModule):
     def length(self):
         return self.mdl.length()
 
-    def set_freq(self, freq):
-        self.mdl.set_freq(freq)
+    #def set_freq(self, freq):
+    #    self.mdl.set_freq(freq)
+
+    def set_pitch(self, pitch):
+        self.mdl.set_pitch(pitch)
 
 class Level(SCModule):
     """ Module for setting the volume of a module.
@@ -2740,7 +2948,7 @@ class Level(SCModule):
 
     def read(self,tails=False,stereo=True,signal=True):
         valA = self.a.read(tails,stereo,signal)
-        valB = self.b.read(tails,stereo,True)
+        valB = self.b.read(False,stereo,True)
         if(stereo):
             return [valA[0]*as_decimal(valB[0]),valA[1]*as_decimal(valB[1])]
         else:
@@ -2782,9 +2990,13 @@ class Level(SCModule):
     def clone(self):
         return Level(self.a.clone(), self.b.clone(), self.a_lead)
 
-    def set_freq(self, freq):
-        self.a.set_freq(freq)
-        self.b.set_freq(freq)
+    #def set_freq(self, freq):
+    #    self.a.set_freq(freq)
+    #    self.b.set_freq(freq)
+
+    def set_pitch(self, pitch):
+        self.a.set_pitch(pitch)
+        self.b.set_pitch(pitch)
 
 class Envelope(SCModule):
     """ Volume envelope module.
@@ -2860,10 +3072,10 @@ class Envelope(SCModule):
     def read(self,tails=False,stereo=True,signal=True):
         if(stereo):
             valA = self.a.read(tails,stereo,signal)
-            valB = self.b.read(tails,stereo,True)
+            valB = self.b.read(False,stereo,True)
             return [valA[0]*as_decimal(valB[0]),valA[1]*as_decimal(valB[1])]
         else:
-            return self.a.read(tails,stereo,signal)*as_decimal(self.b.read(tails,stereo,True))
+            return self.a.read(tails,stereo,signal)*as_decimal(self.b.read(False,stereo,True))
 
     def step_tails(self, delta, const=-1):
         if(const == DELTA):
@@ -2906,9 +3118,13 @@ class Envelope(SCModule):
         tmp.cur = self.cur
         return tmp
 
-    def set_freq(self, freq):
-        self.a.set_freq(freq)
-        self.b.set_freq(freq)
+    #def set_freq(self, freq):
+    #    self.a.set_freq(freq)
+    #    self.b.set_freq(freq)
+
+    def set_pitch(self, pitch):
+        self.a.set_pitch(pitch)
+        self.b.set_pitch(pitch)
 
 class Const(SCModule):
     """ Plays a module in constant time, based on song steps.
@@ -3007,8 +3223,11 @@ class Const(SCModule):
         tmp.stopped = self.stopped
         return tmp
 
-    def set_freq(self, freq):
-        self.mdl.set_freq(freq)
+    #def set_freq(self, freq):
+    #    self.mdl.set_freq(freq)
+
+    def set_pitch(self, pitch):
+        self.mdl.set_pitch(pitch)
 
 class Speed(SCModule):
     """ Module for changing playback rate.
@@ -3096,9 +3315,13 @@ class Speed(SCModule):
     def clone(self):
         return Speed(self.mdl.clone(), self.rate.clone(), self.a_lead)
 
-    def set_freq(self, freq):
-        self.mdl.set_freq(freq)
-        self.rate.set_freq(freq)
+    #def set_freq(self, freq):
+    #    self.mdl.set_freq(freq)
+    #    self.rate.set_freq(freq)
+
+    def set_pitch(self, pitch):
+        self.mdl.set_pitch(pitch)
+        self.rate.set_pitch(pitch)
 
 class LinInterp(SCModule):
     """ Module for linear interpolation between two modules.
@@ -3107,7 +3330,7 @@ class LinInterp(SCModule):
         based on how far we are through the LinInterp width.
     """
 
-    def __init__(self, a, b, wid=1):
+    def __init__(self, a, b, wid=Val(1)):
         """ Initializer.
 
             Arguments:
@@ -3121,10 +3344,16 @@ class LinInterp(SCModule):
         self.width = wid
         self.cur = 0
         self.no_tails = True
+        self.last_width = self.width.read(False,False,False)
 
     def step(self, delta, const=-1):
         if(const != STOP and const != RELEASE):
             self.cur += delta
+        self.width.step(delta,const)
+        if(self.width.done() and not self.done()):
+            extra = self.width.get_extra()
+            self.width.reset()
+            self.width.step(extra,ADJUST)
         self.a.step(delta,const)
         if(self.a.done() and not self.done()):
             extra = self.a.get_extra()
@@ -3137,7 +3366,8 @@ class LinInterp(SCModule):
             self.b.step(extra,ADJUST)
 
     def read(self,tails=False,stereo=True,signal=True):
-        pct = self.cur / self.width
+        self.last_width = self.width.read(False,False,signal)
+        pct = self.cur / self.last_width
         valA = self.a.read(tails,stereo,signal)
         valB = self.b.read(tails,stereo,signal)
         if(stereo):
@@ -3146,42 +3376,51 @@ class LinInterp(SCModule):
             return valA*(1-pct)+valB*pct
 
     def step_tails(self, delta, const=-1):
+        self.width.step_tails(delta, const)
         self.a.step_tails(delta, const)
         self.b.step_tails(delta, const)
 
     def reset(self):
         self.cur = 0
+        #self.width.reset()
         self.a.reset()
         self.b.reset()
 
     def clear(self):
         self.cur = 0
+        self.width.clear()
         self.a.clear()
         self.b.clear()
 
     def done(self):
-        return self.cur >= self.width
+        return self.cur >= self.last_width
 
     def has_tails(self):
         return False
     
     def get_extra(self):
         if(self.done()):
-            return self.cur-self.width
+            return self.cur-self.last_width
         else:
             return 0
 
     def clone(self):
-        tmp = LinInterp(self.a.clone(), self.b.clone(), self.width)
+        tmp = LinInterp(self.a.clone(), self.b.clone(), self.width.clone())
         tmp.cur = self.cur
         return tmp
 
     def length(self):
-        return self.width
+        return self.last_width
 
-    def set_freq(self, freq):
-        self.a.set_freq(freq)
-        self.b.set_freq(freq)
+    #def set_freq(self, freq):
+    #    self.width.set_freq(freq)
+    #    self.a.set_freq(freq)
+    #    self.b.set_freq(freq)
+
+    def set_pitch(self, pitch):
+        self.width.set_pitch(pitch)
+        self.a.set_pitch(pitch)
+        self.b.set_pitch(pitch)
 
 class Multiply(SCModule):
     """ Module that multiplies two inputs together.
@@ -3258,9 +3497,13 @@ class Multiply(SCModule):
         else:
             return self.b.length()
 
-    def set_freq(self, freq):
-        self.a.set_freq(freq)
-        self.b.set_freq(freq)
+    #def set_freq(self, freq):
+    #    self.a.set_freq(freq)
+    #    self.b.set_freq(freq)
+
+    def set_pitch(self, pitch):
+        self.a.set_pitch(pitch)
+        self.b.set_pitch(pitch)
 
 class Divide(SCModule):
     """ Module that divides two inputs.
@@ -3333,9 +3576,13 @@ class Divide(SCModule):
     def length(self):
         return lcm(self.a.length(), self.b.length())
 
-    def set_freq(self, freq):
-        self.a.set_freq(freq)
-        self.b.set_freq(freq)
+    #def set_freq(self, freq):
+    #    self.a.set_freq(freq)
+    #    self.b.set_freq(freq)
+
+    def set_pitch(self, pitch):
+        self.a.set_pitch(pitch)
+        self.b.set_pitch(pitch)
 
 class Add(SCModule):
     """ Module that adds two inputs.
@@ -3412,9 +3659,13 @@ class Add(SCModule):
         else:
             return self.b.length()
 
-    def set_freq(self, freq):
-        self.a.set_freq(freq)
-        self.b.set_freq(freq)
+    #def set_freq(self, freq):
+    #    self.a.set_freq(freq)
+    #    self.b.set_freq(freq)
+
+    def set_pitch(self, pitch):
+        self.a.set_pitch(pitch)
+        self.b.set_pitch(pitch)
 
 class Subtract(SCModule):
     """ Module that subtracts two inputs.
@@ -3491,9 +3742,13 @@ class Subtract(SCModule):
         else:
             return self.b.length()
 
-    def set_freq(self, freq):
-        self.a.set_freq(freq)
-        self.b.set_freq(freq)
+    #def set_freq(self, freq):
+    #    self.a.set_freq(freq)
+    #    self.b.set_freq(freq)
+
+    def set_pitch(self, pitch):
+        self.a.set_pitch(pitch)
+        self.b.set_pitch(pitch)
 
 class Modulus(SCModule):
     """ Module that performs modulus on two inputs.
@@ -3570,9 +3825,13 @@ class Modulus(SCModule):
         else:
             return self.b.length()
 
-    def set_freq(self, freq):
-        self.a.set_freq(freq)
-        self.b.set_freq(freq)
+    #def set_freq(self, freq):
+    #    self.a.set_freq(freq)
+    #    self.b.set_freq(freq)
+
+    def set_pitch(self, pitch):
+        self.a.set_pitch(pitch)
+        self.b.set_pitch(pitch)
 
 class Repeat(SCModule):
     """ Module that loops an input a given number of times.
@@ -3608,7 +3867,7 @@ class Repeat(SCModule):
             self.b.reset()
             self.b.step(extra,ADJUST)
 
-        reps = self.b.read(stereo=False,signal=False)
+        reps = self.b.read(tails=False,stereo=False,signal=False)
         if(self.release > 0):
             while((not self.stopped and (reps < 0 or self.resets < reps)) and self.cur >= self.release):
                 self.cur %= self.release
@@ -3664,9 +3923,13 @@ class Repeat(SCModule):
         else:
             return self.a.length()*self.b.read(stereo=False,signal=False)
 
-    def set_freq(self, freq):
-        self.a.set_freq(freq)
-        self.b.set_freq(freq)
+    #def set_freq(self, freq):
+    #    self.a.set_freq(freq)
+    #    self.b.set_freq(freq)
+
+    def set_pitch(self, pitch):
+        self.a.set_pitch(pitch)
+        self.b.set_pitch(pitch)
 
 class Cross(SCModule):
     """ Module for "crossing" a binary operation.
@@ -3768,8 +4031,11 @@ class Cross(SCModule):
     def length(self):
         return self.op.a.length()*self.op.b.length()
 
-    def set_freq(self, freq):
-        self.op.set_freq(freq)
+    #def set_freq(self, freq):
+    #    self.op.set_freq(freq)
+
+    def set_pitch(self, pitch):
+        self.op.set_pitch(pitch)
 
 class Length(SCModule):
     """ Overrides the length of a given module. This will:
@@ -3840,9 +4106,13 @@ class Length(SCModule):
     def length(self):
         return self.b.read(stereo=False)
 
-    def set_freq(self,freq):
-        self.a.set_freq(freq)
-        self.b.set_freq(freq)
+    #def set_freq(self,freq):
+    #    self.a.set_freq(freq)
+    #    self.b.set_freq(freq)
+
+    def set_pitch(self,pitch):
+        self.a.set_pitch(pitch)
+        self.b.set_pitch(pitch)
 
     def clone(self):
         tmp = Length(self.a.clone(),self.b.clone())
@@ -3907,8 +4177,8 @@ class Limit(SCModule):
 
     def read(self,tails=False,stereo=True,signal=True):
         valA = self.a.read(tails,stereo,signal)
-        valB = self.b.read(tails,stereo,signal)
-        knee = self.knee.read(tails,stereo,signal)
+        valB = self.b.read(False,stereo,signal)
+        knee = self.knee.read(False,stereo,signal)
 
         if(stereo):
             if(abs(valA[0])>(abs(valB[0])-abs(knee[0]))):
@@ -3972,10 +4242,15 @@ class Limit(SCModule):
         else:
             return self.b.length()
 
-    def set_freq(self, freq):
-        self.a.set_freq(freq)
-        self.b.set_freq(freq)
-        self.knee.set_freq(freq)
+    #def set_freq(self, freq):
+    #    self.a.set_freq(freq)
+    #    self.b.set_freq(freq)
+    #    self.knee.set_freq(freq)
+
+    def set_pitch(self, pitch):
+        self.a.set_pitch(pitch)
+        self.b.set_pitch(pitch)
+        self.knee.set_pitch(pitch)
 
 class Attack(SCModule):
     """ Module for setting an attack looping point.
@@ -4015,7 +4290,7 @@ class Attack(SCModule):
 
     def reset(self):
         self.a.reset()
-        self.a.step(self.b.read(stereo=False,signal=False),ADJUST)
+        self.a.step(self.b.read(tails=False,stereo=False,signal=False),ADJUST)
 
     def clear(self):
         self.a.clear()
@@ -4036,9 +4311,13 @@ class Attack(SCModule):
     def length(self):
         return self.a.length()
 
-    def set_freq(self, freq):
-        self.a.set_freq(freq)
-        self.b.set_freq(freq)
+    #def set_freq(self, freq):
+    #    self.a.set_freq(freq)
+    #    self.b.set_freq(freq)
+
+    def set_pitch(self, pitch):
+        self.a.set_pitch(pitch)
+        self.b.set_pitch(pitch)
 
 class Release(SCModule):
     """ Module for setting an release looping point.
@@ -4127,9 +4406,311 @@ class Release(SCModule):
     def length(self):
         return self.a.length()
 
-    def set_freq(self, freq):
-        self.a.set_freq(freq)
-        self.b.set_freq(freq)
+    #def set_freq(self, freq):
+    #    self.a.set_freq(freq)
+    #    self.b.set_freq(freq)
+
+    def set_pitch(self, pitch):
+        self.a.set_pitch(pitch)
+        self.b.set_pitch(pitch)
+
+class Delay:
+    """ Delay Module
+    """
+    def __init__(self, mdl, dly, fpstep, fdbk=Val(0), wet=Val(1), dry=Val(1)):
+        self.mdl = mdl
+        self.dly = dly
+        self.fdbk = fdbk
+        self.wet = wet
+        self.dry = dry
+        self.fpstep = fpstep
+        self.buff = []
+        self.bufamt = -1
+        self.lastbufread = 0
+        self.lastdly = -1
+        # amount of time the buffer has been quiet
+        self.quiettime = 0
+        # buffer read values beneath this are considered silence
+        self.quietgate = 0.1
+
+    def step(self, delta, const=-1):
+        if(not self.mdl.done()):
+            self.mdl.step(delta, const)
+        self.dly.step(delta, const)
+        if(self.dly.done()):
+            extra = self.dly.get_extra()
+            self.dly.reset()
+            self.dly.step(extra,ADJUST)
+        self.fdbk.step(delta, const)
+        if(self.fdbk.done()):
+            extra = self.fdbk.get_extra()
+            self.fdbk.reset()
+            self.fdbk.step(extra,ADJUST)
+        self.wet.step(delta, const)
+        if(self.wet.done()):
+            extra = self.wet.get_extra()
+            self.wet.reset()
+            self.wet.step(extra,ADJUST)
+        self.dry.step(delta, const)
+        if(self.dry.done()):
+            extra = self.dry.get_extra()
+            self.dry.reset()
+            self.dry.step(extra,ADJUST)
+
+    def step_tails(self, delta, const=-1):
+        self.mdl.step_tails(delta, const)
+        self.dly.step_tails(delta, const)
+        self.fdbk.step_tails(delta, const)
+        self.wet.step_tails(delta, const)
+        self.dry.step_tails(delta, const)
+
+    # TODO: Move buffer reading to read_tails
+    # TODO:
+    def read(self, tails=False,stereo=True,signal=True):
+        if(stereo and type(self.lastbufread) == int):
+            self.lastbufread = [self.lastbufread, self.lastbufread]
+        elif(not stereo and type(self.lastbufread) == list):
+            self.lastbufread = 0.5 * (self.lastbufread[0] + self.lastbufread[1])
+            
+        curdly = abs(self.dly.read(tails,False,signal))
+        curdry = self.dry.read(False,stereo,signal)
+        curwet = self.wet.read(False,stereo,signal)
+        curfdbk = self.fdbk.read(False,stereo,signal)
+
+        if(not tails):
+            if(self.lastdly != curdly):
+                self.lastdly = curdly
+                self.bufamt = int(self.lastdly * self.fpstep + 0.5)
+            
+            if(self.mdl.done()):
+                if(stereo):
+                    read = [0,0]
+                else:
+                    read = 0
+            else:
+                read = self.mdl.read(tails,stereo,signal)
+            if(len(self.buff) >= self.bufamt):
+                if(self.bufamt == 0):
+                    wet = read
+                else:
+                    wet = self.buff.pop(0)
+                self.lastbufread = wet               
+            
+                if(stereo):
+                    if(abs(wet[0])>self.quietgate or abs(wet[1])>self.quietgate):
+                        self.quiettime = 0
+                    else:
+                        self.quiettime += 1
+
+                    if(self.bufamt > 0):
+                        tobuff = [read[0]+(wet[0]*curfdbk[0]),read[1]+(wet[1]*curfdbk[1])]
+                        if(len(self.buff) == self.bufamt-1):
+                            self.buff.append(tobuff)
+                        else:
+                            self.buff[self.bufamt] = tobuff
+                    return [(read[0]*curdry[0]) + (wet[0]*curwet[0]),(read[1]*curdry[1]) + (wet[1]*curwet[1])]
+                else:
+                    if(abs(wet)>self.quietgate):
+                        self.quiettime = 0
+                    else:
+                        self.quiettime += 1
+
+                    if(self.bufamt > 0):
+                        tobuff = read + (wet*curfdbk)
+                        if(len(self.buff) == self.bufamt-1):
+                            self.buff.append(tobuff)
+                        else:
+                            self.buff[self.bufamt-1] = tobuff
+                    return (read*curdry) + (wet*curwet)
+            else:
+                if(self.bufamt > 0):
+                    self.buff.append(read)
+                if(stereo):
+                    if(abs(read[0])>self.quietgate or abs(read[1])>self.quietgate):
+                        self.quiettime = 0
+                    else:
+                        self.quiettime += 1
+                    return [(read[0]*curdry[0]) + (self.lastbufread[0]*curwet[0]), (read[1]*curdry[1]) + (self.lastbufread[1]*curwet[1])]
+                else:
+                    if(abs(read)>self.quietgate):
+                        self.quiettime = 0
+                    else:
+                        self.quiettime += 1
+                    return (read*curdry) + (self.lastbufread*curwet)
+        else:
+            read = self.mdl.read(tails, stereo, signal)
+            if(stereo):
+                # add the tails value to the buffer.
+                if(self.bufamt == 0):
+                    # in the case of a 0 delay, there is no buffer & read is wet & dry
+                    return [read[0]*curdry[0] + read[0]*curwet[0],read[1]*curdry[1] + read[1]*curwet[1]]
+                elif(len(self.buff) < self.bufamt + 1):
+                    prv = self.buff[len(self.buff)-1]
+                    self.buff[len(self.buff)-1] = [prv[0]+(read[0]*curdry[0]),prv[1]+(read[1]*curdry[1])]
+                else:
+                    prv = self.buff[self.bufamt]
+                    self.buff[self.bufamt] = [prv[0]+(read[0]*curdry[0]),prv[1]+(read[1]*curdry[1])]
+                return [read[0]*curdry[0],read[1]*curdry[1]]
+            else:
+                if(self.bufamt == 0):
+                    # in the case of a 0 delay, there is no buffer & read is wet & dry
+                    return read*curdry + read*curwet
+                elif(len(self.buff) < self.bufamt +1):
+                    self.buff[len(self.buff)-1] = prv + (read*curdry)
+                else:
+                    self.buff[self.bufamt] = prv + (read*curdry)
+                return read * curdry
+        
+    def reset(self):
+        self.mdl.reset()
+        self.dly.reset()
+        self.wet.reset()
+        self.dry.reset()
+        self.fdbk.reset()
+        
+    def clear(self):
+        self.mdl.clear()
+        self.dly.clear()
+        self.wet.clear()
+        self.dry.clear()
+        self.fdbk.clear()
+        self.buff = []
+        self.lastbufread = 0
+        self.lastdly = -1
+        self.quiettime = 0
+        
+    def done(self):
+        return self.mdl.done() and self.quiettime > self.bufamt
+        
+    def has_tails(self):
+        return self.mdl.has_tails()
+        
+    def get_extra(self):
+        return self.mdl.get_extra()
+        
+    def length(self):
+        return self.mdl.length()
+        
+    #def set_freq(self,freq):
+    #    self.mdl.set_freq(freq)
+
+    def set_pitch(self,pitch):
+        self.mdl.set_pitch(pitch)
+        
+    def clone(self):
+        cln = Delay(self.mdl.clone(), self.dly.clone(), self.fpstep, self.fdbk.clone(), self.wet.clone(), self.dry.clone())
+        newbuf = []
+        for i in self.buff:
+            newbuf.append(i)
+        cln.buff = newbuf
+        cln.bufamt = self.bufamt
+        cln.lastbufread = self.lastbufread
+        cln.lastdly = self.lastdly
+        cln.quiettime = self.quiettime
+        cln.quietgate = self.quietgate
+        return cln
+
+class Pitch(SCModule):
+    """ Module for pitch shifting.
+
+        Adds a given value to all pitch sets.
+    """
+
+    def __init__(self, a, b=Val(0), alead=True):
+        """ Initializer.
+
+            Arguments:
+            a - The input/source module.
+            b - The pitch transposition (in cents +/-)
+            alead - Which module determines the overall length.
+        """
+
+        self.a = a
+        self.b = b
+        self.alead = alead
+        self.lastpitch = 0
+        self.lastshift = b.read(False,False,False)
+        self.a.set_pitch(self.lastshift)
+
+    def step(self, delta, const=-1):
+        self.a.step(delta, const)
+        self.b.step(delta, const)
+        if(self.alead):
+            if(self.b.done() and not self.a.done()):
+                extra = self.b.get_extra()
+                self.b.reset()
+                self.b.step(extra,ADJUST)
+        else:
+            if(self.a.done() and not self.b.done()):
+                extra = self.a.get_extra()
+                self.a.reset()
+                self.a.step(extra,ADJUST)
+
+    def read(self,tails=False,stereo=True,signal=True):
+        val = self.a.read(tails,stereo,signal)
+        shift = self.b.read(False,False,False)
+        if(shift != self.lastshift):
+            self.lastshift = shift
+            shifted = self.lastpitch + self.lastshift
+            self.a.set_pitch(shifted)
+            #shifted = self.lastfreq * (2**(1/1200.0))**self.shift
+            #self.a.set_freq(shifted)
+        if(stereo):
+            return [-val[0],-val[1]]
+        else:
+            return -val
+
+    def step_tails(self, delta, const=-1):
+        self.a.step_tails(delta, const)
+        self.b.step_tails(delta, const)
+
+    def reset(self):
+        self.a.reset()
+        #self.b.reset()
+        #self.shift = self.b.read(False,False,False)
+
+    def clear(self):
+        self.a.clear()
+        self.b.clear()
+        self.shift = self.b.read(False,False,False)
+
+    def done(self):
+        if(self.alead):
+            return self.a.done()
+        else:
+            return self.b.done()
+
+    def has_tails(self):
+        return self.a.has_tails() or self.b.has_tails()
+    
+    def get_extra(self):
+        if(self.alead):
+            return self.a.get_extra()
+        else:
+            return self.b.get_extra()
+
+    def clone(self):
+        cln = Pitch(self.a.clone(),self.b.clone(),self.alead)
+        cln.lastpitch = self.lastpitch
+        cln.lastshift = self.lastshift
+        return cln
+
+    def length(self):
+        if(self.alead):
+            return self.a.length()
+        else:
+            return self.b.length()
+
+    #def set_freq(self, freq):
+    #    self.lastfreq = freq
+    #    shifted = self.lastfreq * (2**(1/1200.0))**self.shift
+    #    self.a.set_freq(shifted)
+
+    def set_pitch(self, pitch):
+        if(pitch != self.lastpitch):
+            self.lastpitch = pitch
+            shifted = self.lastpitch + self.lastshift
+            self.a.set_pitch(shifted)
 
 
 def gcd(a, b):
@@ -4185,20 +4766,14 @@ def limit(val):
 def calc_freq(disp):
     """ Calculates the frequency of a given pitch.
 
-        This calculation is performed in cents, and uses A4 for reference. As
-        such, input must be expressed in terms of distance to A4--so:
-            0 = A4
-            300 = C5
-            -1200 = A3
-            etc.
-
-        Currently, we pre-bake all frequencies when SynthCorona starts up, so
-        this is only used initially--afterward, we pull frequencies from a list.
+        This calculation is performed in cents-above-A0. We use A4 as a reference,
+        so the given displacement is shifted by -5700 (the distance from A4 down 
+        to A0 in cents).
 
         Arguments:
-        disp -- The pitch, expressed as "cents from A4".
+        disp -- The pitch, expressed as "cents from A0".
     """
-    return 440.0 * (2**(1/1200.0))**disp
+    return 440.0 * (2**(1/1200.0))**(disp-5700)
 
 def pan(vals, pan):
     """ Calculates panning.
