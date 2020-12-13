@@ -216,9 +216,9 @@ The Limit module has an optional KNEE property, which will smooth values below t
 In this example, we are limiting WAVE to values between -7 and 7, and setting a KNEE size of 2, which means that values above 5 (7 minus 2) will be smoothed out, to soften the clipping somewhat. You can also link to another module in the KNEE field, for dynamic knee values.
 </li>
 <li>The Delay module accepts several meta parameters for controlling the wet/dry balance and feedback. They are:
-      <ul><li>FEEDBACK: Sets the feedback ratio. This should be in the range [0,1), with 0 being no feedback, and 1 being 100% feedback (which will sustain infinitely if you don't put some other length cap on it).</li>
-          <li>WET: Sets the percentage of the delayed signal that will go through. [0,1], with 0 being no wet signal, 1 being 100%.</li>
-          <li>DRY: Sets the percentage of the input signal that will pass through dry. [0,1], with 0 being no original input, 1 being 100%.</li></ul>
+      <ul><li><b>FEEDBACK</b>: Sets the feedback ratio. This should be in the range [0,1), with 0 being no feedback, and 1 being 100% feedback (which will sustain infinitely if you don't put some other length cap on it).</li>
+            <li><b>WET</b>: Sets the percentage of the delayed signal that will go through. [0,1], with 0 being no wet signal, 1 being 100%.</li>
+            <li><b>DRY</b>: Sets the percentage of the input signal that will pass through dry. [0,1], with 0 being no original input, 1 being 100%.</li></ul>
 </li>
 </ul>
 <h2>VI. Instruments</h2>
